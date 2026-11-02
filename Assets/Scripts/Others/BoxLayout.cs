@@ -19,6 +19,8 @@ public class BoxLayout : MonoBehaviour
 
     [Header("--- WALL SETTINGS ---")]
     [SerializeField] private float wallThickness = 0.15f;
+    [Range(0f, 1f)]
+    [SerializeField] private float wallAlpha = 1f;
 
     #endregion
 
@@ -28,6 +30,7 @@ public class BoxLayout : MonoBehaviour
     private void Start()
     {
         SetupBox();
+        ApplyWallAlpha();
     }
 
 #if UNITY_EDITOR
@@ -36,7 +39,10 @@ public class BoxLayout : MonoBehaviour
         UnityEditor.EditorApplication.delayCall += () =>
         {
             if (this != null && !Application.isPlaying)
+            {
                 SetupBox();
+                ApplyWallAlpha();
+            }
         };
     }
 #endif
@@ -98,6 +104,33 @@ public class BoxLayout : MonoBehaviour
             spriteSize = sr.sprite.bounds.size;
 
         wall.localScale = new Vector3(width / spriteSize.x, height / spriteSize.y, wall.localScale.z);
+    }
+
+    #endregion
+
+
+    #region WALL APPEARANCE
+
+    private void ApplyWallAlpha()
+    {
+        ApplyAlpha(leftWall);
+        ApplyAlpha(rightWall);
+        ApplyAlpha(bottomWall);
+    }
+
+    private void ApplyAlpha(Transform wall)
+    {
+        if (wall == null)
+            return;
+
+        SpriteRenderer sr = wall.GetComponent<SpriteRenderer>();
+
+        if (sr == null)
+            return;
+
+        Color color = sr.color;
+        color.a = wallAlpha;
+        sr.color = color;
     }
 
     #endregion
