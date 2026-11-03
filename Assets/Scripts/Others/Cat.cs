@@ -20,6 +20,8 @@ public class Cat : MonoBehaviour
     RectTransform rectTransform;
     Transform originalParent;
     Vector3 originalScale;
+    Vector2 originalAnchoredPosition;
+    CatBubble catBubble;
 
     // Bắn ra khi người chơi bấm vào mèo, logic game lắng nghe để quyết định mèo bay đi đâu
     public event Action<Cat> OnClicked;
@@ -56,6 +58,8 @@ public class Cat : MonoBehaviour
         rectTransform = GetComponent<RectTransform>();
         originalParent = rectTransform.parent;
         originalScale = rectTransform.localScale;
+        originalAnchoredPosition = rectTransform.anchoredPosition;
+        catBubble = GetComponentInParent<CatBubble>();
 
         if (image == null)
             image = GetComponent<Image>();
@@ -68,9 +72,8 @@ public class Cat : MonoBehaviour
 
         if (button != null)
         {
-            Debug.Log("Đã Gán nút");
             button.onClick.AddListener(OnButtonClick);
-        }    
+        }
     }
 
     private void OnEnable()
@@ -111,15 +114,67 @@ public class Cat : MonoBehaviour
     {
         catID = targetCatID;
 
+        SetUpCatSprite();
+        SetUpCatAnimator();
+    }
+
+    /// <summary>
+    /// Gán sprite theo loại mèo (chạy được cả khi chưa có animation).
+    /// </summary>
+    void SetUpCatSprite()
+    {
+        Sprite[] sprites = GameManager.Instance.catSprites;
+
+        if (image == null || sprites == null || catID < 0 || catID >= sprites.Length)
+            return;
+
+        image.sprite = sprites[catID];
+    }
+
+    /// <summary>
+    /// Gán animator controller theo loại mèo nếu có, chưa có thì bỏ qua.
+    /// </summary>
+    void SetUpCatAnimator()
+    {
         if (animator == null)
             animator = GetComponent<Animator>();
 
         if (animator == null)
             return;
 
-        animator.runtimeAnimatorController = GameManager.Instance.catAnimatorControllers[targetCatID];
+        RuntimeAnimatorController[] controllers = GameManager.Instance.catAnimatorControllers;
+        bool hasController = controllers != null && catID >= 0 && catID < controllers.Length && controllers[catID] != null;
+
+        // Chưa có controller cho loại mèo này thì tắt Animator để không đè lên sprite tĩnh
+        animator.runtimeAnimatorController = hasController ? controllers[catID] : null;
+        animator.enabled = hasController;
 
         PlayAnimation(IDLE_STATE);
+    }
+
+    /// <summary>
+    /// Đưa mèo về trạng thái ban đầu trong bóng, dừng bay nếu đang bay dở (dùng khi load level mới).
+    /// </summary>
+    public void ResetCat()
+    {
+        // Mèo chưa từng được bật thì chưa chạy Awake, không có gì để reset
+        if (rectTransform == null)
+            return;
+
+        // DOKill không gọi OnComplete nên sẽ không trừ mèo của bóng / không báo tới ổ
+        transform.DOKill();
+        ReturnToOriginalParent();
+
+        isFlying = false;
+        transform.localScale = originalScale;
+    }
+
+    void ReturnToOriginalParent()
+    {
+        if (transform.parent != originalParent)
+            transform.SetParent(originalParent, false);
+
+        rectTransform.anchoredPosition = originalAnchoredPosition;
     }
 
     #endregion
@@ -132,8 +187,6 @@ public class Cat : MonoBehaviour
         if (isFlying)
             return;
 
-        Debug.Log("Click");
-
         OnClicked?.Invoke(this);
         OnCatClick(GameManager.Instance.testPos, null);
     }
@@ -145,14 +198,18 @@ public class Cat : MonoBehaviour
 
         isFlying = true;
 
-        //if (winkCoroutine != null)
-        //{
-        //    StopCoroutine(winkCoroutine);
-        //    winkCoroutine = null;
-        //}
-        //PlayAnimation(IDLE_STATE);
+        if (winkCoroutine != null)
+        {
+            StopCoroutine(winkCoroutine);
+            winkCoroutine = null;
+        }
+        PlayAnimation(IDLE_STATE);
 
         transform.SetParent(GameManager.Instance.catFlyContainer);
+
+        // Trừ mèo ngay khi bấm (mèo đã rời khỏi bóng nên bóng vỡ / tắt cũng không ảnh hưởng mèo đang bay)
+        if (catBubble != null)
+            catBubble.RemoveCat();
 
         Vector3 targetPos = GetTargetPosition(target);
 
@@ -165,8 +222,8 @@ public class Cat : MonoBehaviour
         {
             onArrived?.Invoke();
 
-            // Trả mèo về parent cũ trước khi tắt (không được SetParent trong OnDisable)
-            transform.SetParent(originalParent, false);
+            // Trả mèo về parent + vị trí cũ trước khi tắt (không được SetParent trong OnDisable)
+            ReturnToOriginalParent();
             gameObject.SetActive(false);
         });
     }
@@ -176,9 +233,14 @@ public class Cat : MonoBehaviour
 
     #region ANIMATION METHODS
 
+    bool CanPlayAnimation()
+    {
+        return animator != null && animator.enabled && animator.runtimeAnimatorController != null;
+    }
+
     void PlayAnimation(string animState)
     {
-        if (animator == null || animator.runtimeAnimatorController == null)
+        if (!CanPlayAnimation())
             return;
 
         int stateHash = Animator.StringToHash(animState);
@@ -227,11 +289,15 @@ public class Cat : MonoBehaviour
             if (isFlying)
                 yield break;
 
+            // Chưa có animation thì bỏ qua lượt này, chờ lượt sau
+            if (!CanPlayAnimation())
+                continue;
+
             PlayAnimation(WINK_STATE);
 
             // Đợi 1 frame để Animator cập nhật sang state wink rồi mới lấy độ dài clip
             yield return null;
-            float winkLength = animator != null ? animator.GetCurrentAnimatorStateInfo(0).length : 0f;
+            float winkLength = CanPlayAnimation() ? animator.GetCurrentAnimatorStateInfo(0).length : 0f;
             yield return new WaitForSeconds(winkLength);
 
             if (isFlying)
