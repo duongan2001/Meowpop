@@ -34,6 +34,7 @@ public class CatBubble : MonoBehaviour
     #region PROPERTIES
 
     public Cat[] Cats => cats;
+    public Cat[] AllCats => allCats;
     public int RemainingCat => remainingCat;
     public float Radius => bubbleCollider.radius;
 

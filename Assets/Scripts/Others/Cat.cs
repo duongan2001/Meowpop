@@ -21,6 +21,7 @@ public class Cat : MonoBehaviour
     Transform originalParent;
     Vector3 originalScale;
     Vector2 originalAnchoredPosition;
+    Quaternion originalLocalRotation;
     CatBubble catBubble;
 
     // Bắn ra khi người chơi bấm vào mèo, logic game lắng nghe để quyết định mèo bay đi đâu
@@ -59,6 +60,7 @@ public class Cat : MonoBehaviour
         originalParent = rectTransform.parent;
         originalScale = rectTransform.localScale;
         originalAnchoredPosition = rectTransform.anchoredPosition;
+        originalLocalRotation = rectTransform.localRotation;
         catBubble = GetComponentInParent<CatBubble>();
 
         if (image == null)
@@ -175,6 +177,9 @@ public class Cat : MonoBehaviour
             transform.SetParent(originalParent, false);
 
         rectTransform.anchoredPosition = originalAnchoredPosition;
+
+        // Trả lại góc xoay ban đầu trong bóng (khi bay đã bị xoay về 0)
+        rectTransform.localRotation = originalLocalRotation;
     }
 
     #endregion
@@ -187,8 +192,8 @@ public class Cat : MonoBehaviour
         if (isFlying)
             return;
 
+        // GameManager lắng nghe để chọn đích (ổ / khay) rồi gọi OnCatClick
         OnClicked?.Invoke(this);
-        OnCatClick(GameManager.Instance.testPos, null);
     }
 
     public void OnCatClick(RectTransform target, Action onArrived = null)
@@ -217,6 +222,8 @@ public class Cat : MonoBehaviour
         Sequence flySeq = DOTween.Sequence();
         flySeq.Append(transform.DOMove(targetPos, flyDuration).SetEase(flyEase));
         flySeq.Join(transform.DOScale(originalScale * flyEndScale, flyDuration).SetEase(Ease.InQuad));
+        // Xoay dần về thẳng (0, 0, 0) trong lúc bay
+        flySeq.Join(transform.DORotate(Vector3.zero, flyDuration).SetEase(flyEase));
         flySeq.SetTarget(transform);
         flySeq.OnComplete(() =>
         {

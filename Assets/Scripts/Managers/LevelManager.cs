@@ -57,9 +57,17 @@ public class LevelManager : MonoBehaviour
         return currentLevelNumber;
     }
 
-    public void SetCurrentLevel(int level)
+    /// <summary>
+    /// Đặt level hiện tại. saveProgress = false: chỉ đổi level đang chơi, không ghi đè tiến trình đã lưu
+    /// (dùng khi chơi lại level đã thắng).
+    /// </summary>
+    public void SetCurrentLevel(int level, bool saveProgress = true)
     {
         currentLevelNumber = Mathf.Max(1, level);
+
+        if (!saveProgress)
+            return;
+
         PlayerPrefs.SetInt(CURRENT_LEVEL_KEY, currentLevelNumber);
         PlayerPrefs.Save();
     }
