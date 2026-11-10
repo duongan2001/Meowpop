@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Missile
   layers:
   - Default
   - TransparentFX
@@ -40,4 +41,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Gameplay
+    uniqueID: 2239230341
+    locked: 0
+  - name: UI Panel
+    uniqueID: 1289020393
+    locked: 0
+  - name: UI Items
+    uniqueID: 64504605
     locked: 0
