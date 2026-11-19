@@ -28,6 +28,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] int maxPlaceAttempts = 50;
     [Tooltip("Thời gian giữa 2 lần sinh bóng (giây)")]
     [SerializeField] float bubbleSpawnInterval = 0.5f;
+    [Tooltip("Mèo trong bao nhiêu bóng đầu tiên (còn mèo) luôn đứng thẳng")]
+    [SerializeField] int uprightBubbleCount = 20;
+
+    [Header("Panels")]
+    [SerializeField] VictoryPanel victoryPanel;
 
     Coroutine spawnCoroutine;
     bool isGameOver;            // dừng chơi (thắng hoặc thua)
@@ -88,8 +93,6 @@ public class GameManager : MonoBehaviour
     public void LoadLevel()
     {
         playingLevelNumber = LevelManager.Instance.GetCurrentLevel();
-        Debug.Log($"[Game Manager] Load Level: {playingLevelNumber}");
-
         LevelManager.Instance.LoadLevelData();
 
         if (LevelManager.Instance.CurrentLevel == null)
@@ -106,6 +109,10 @@ public class GameManager : MonoBehaviour
 
         // Bóng đã setup xong dữ liệu mèo (dù chưa hiện) nên ổ chọn được loại mèo ngay
         SetUpCatBeds();
+
+        // Tới level mở thử thách mới thì hiện popup giới thiệu
+        if (ChallengeManager.Instance != null)
+            ChallengeManager.Instance.CheckNewChallenges(playingLevelNumber);
     }
 
     /// <summary>
@@ -169,7 +176,8 @@ public class GameManager : MonoBehaviour
         // Lưu luôn level tiếp theo để thoát game giữa chừng không mất tiến trình
         LevelManager.Instance.SetCurrentLevel(LevelManager.Instance.GetCurrentLevel() + 1);
 
-        // TODO: mở popup thắng, bấm tiếp tục thì gọi LoadLevel()
+        if (victoryPanel != null)
+            victoryPanel.ShowVictory(playingLevelNumber);
     }
 
     void SetUpCatBeds()
@@ -204,6 +212,14 @@ public class GameManager : MonoBehaviour
         if (isGameOver || cat.IsFlying)
             return;
 
+        SendCatToTarget(cat);
+
+        // Bấm mèo có thể làm bóng vỡ -> bóng sau lọt vào nhóm bóng đầu, mèo của nó xoay thẳng
+        RefreshUprightCats(true);
+    }
+
+    void SendCatToTarget(Cat cat)
+    {
         int catID = cat.CatID;
 
         CatBed bed = FindBedForCat(catID);
@@ -336,6 +352,9 @@ public class GameManager : MonoBehaviour
             bubble.gameObject.SetActive(false);
         }
 
+        // Mèo trong các bóng đầu đứng thẳng ngay từ lúc sinh
+        RefreshUprightCats(false);
+
         spawnCoroutine = StartCoroutine(SpawnBubblesSequentially(spawnOrder));
     }
 
@@ -357,6 +376,28 @@ public class GameManager : MonoBehaviour
         }
 
         spawnCoroutine = null;
+    }
+
+    /// <summary>
+    /// Mèo trong uprightBubbleCount bóng đầu (theo thứ tự sinh, bỏ bóng đã vỡ) đứng thẳng,
+    /// các bóng sau giữ góc nghiêng ban đầu.
+    /// </summary>
+    void RefreshUprightCats(bool animate)
+    {
+        int levelBubbleCount = Mathf.Min(LevelManager.Instance.BubbleCatIDs.Count, spawnedBubbles.Count);
+        int uprightCount = 0;
+
+        for (int i = 0; i < levelBubbleCount; i++)
+        {
+            CatBubble bubble = spawnedBubbles[i];
+
+            if (bubble.RemainingCat <= 0)
+                continue;
+
+            bool upright = uprightCount < uprightBubbleCount;
+            bubble.SetCatsUpright(upright, animate);
+            uprightCount++;
+        }
     }
 
     CatBubble GetBubble(int index)

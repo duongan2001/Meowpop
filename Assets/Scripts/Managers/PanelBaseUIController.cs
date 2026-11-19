@@ -1,10 +1,10 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class PanelBaseUIController : MonoBehaviour
 {
     #region VARIABLES
-    
+
     [Header("--- PANEL SETTINGS ---")]
     [SerializeField] CanvasGroup panelCanvasGroup;
     [SerializeField] float fadeDuration = 0.25f;
@@ -46,12 +46,17 @@ public class PanelBaseUIController : MonoBehaviour
     {
         CancelShowDelay();
 
-        gameObject.SetActive(true);
+        // Panel đang tắt thì bắt đầu từ alpha 0 để luôn có hiệu ứng fade in
+        if (!gameObject.activeSelf)
+        {
+            gameObject.SetActive(true);
+            panelCanvasGroup.alpha = 0f;
+        }
 
         panelCanvasGroup.interactable = true;
         panelCanvasGroup.blocksRaycasts = true;
 
-        StartFade(1f);
+        StartFade(1f, false);
     }
 
     public virtual void ShowDelay()
@@ -61,19 +66,25 @@ public class PanelBaseUIController : MonoBehaviour
         gameObject.SetActive(true);
 
         // Keep panel hidden during delay.
-        if (fadeCoroutine != null)
-        {
-            StopCoroutine(fadeCoroutine);
-            fadeCoroutine = null;
-        }
+        StopFade();
 
         panelCanvasGroup.alpha = 0f;
         panelCanvasGroup.interactable = false;
         panelCanvasGroup.blocksRaycasts = false;
 
+        // Object cha đang tắt thì không chạy được coroutine, hiện luôn
+        if (!gameObject.activeInHierarchy)
+        {
+            Show();
+            return;
+        }
+
         showDelayCoroutine = StartCoroutine(ShowDelayCoroutine());
     }
 
+    /// <summary>
+    /// Fade alpha về 0 rồi tắt hẳn panel (SetActive false).
+    /// </summary>
     public virtual void Hide()
     {
         CancelShowDelay();
@@ -81,7 +92,7 @@ public class PanelBaseUIController : MonoBehaviour
         panelCanvasGroup.interactable = false;
         panelCanvasGroup.blocksRaycasts = false;
 
-        StartFade(0f);
+        StartFade(0f, true);
     }
 
     #endregion
@@ -113,47 +124,63 @@ public class PanelBaseUIController : MonoBehaviour
 
     #region FADE METHODS
 
-    private void StartFade(float targetAlpha)
+    private void StartFade(float targetAlpha, bool deactivateOnComplete)
+    {
+        StopFade();
+
+        // Panel (hoặc object cha) đang tắt thì không chạy được coroutine, đặt kết quả luôn
+        if (!gameObject.activeInHierarchy)
+        {
+            FinishFade(targetAlpha, deactivateOnComplete);
+            return;
+        }
+
+        fadeCoroutine = StartCoroutine(FadeCanvasGroup(targetAlpha, deactivateOnComplete));
+    }
+
+    private void StopFade()
     {
         if (fadeCoroutine != null)
         {
             StopCoroutine(fadeCoroutine);
             fadeCoroutine = null;
         }
-
-        fadeCoroutine = StartCoroutine(FadeCanvasGroup(targetAlpha));
     }
 
-    private IEnumerator FadeCanvasGroup(float targetAlpha)
+    private IEnumerator FadeCanvasGroup(float targetAlpha, bool deactivateOnComplete)
     {
         float startAlpha = panelCanvasGroup.alpha;
         float duration = Mathf.Max(0f, fadeDuration);
 
-        if (duration <= 0f)
+        if (duration > 0f)
         {
-            panelCanvasGroup.alpha = targetAlpha;
-            fadeCoroutine = null;
-            yield break;
+            float elapsedTime = 0f;
+
+            while (elapsedTime < duration)
+            {
+                elapsedTime += Time.unscaledDeltaTime;
+
+                float t = Mathf.Clamp01(elapsedTime / duration);
+
+                // SmoothStep.
+                t = t * t * (3f - 2f * t);
+
+                panelCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
+
+                yield return null;
+            }
         }
 
-        float elapsedTime = 0f;
-
-        while (elapsedTime < duration)
-        {
-            elapsedTime += Time.unscaledDeltaTime;
-
-            float t = Mathf.Clamp01(elapsedTime / duration);
-
-            // SmoothStep.
-            t = t * t * (3f - 2f * t);
-
-            panelCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
-
-            yield return null;
-        }
-
-        panelCanvasGroup.alpha = targetAlpha;
         fadeCoroutine = null;
+        FinishFade(targetAlpha, deactivateOnComplete);
+    }
+
+    private void FinishFade(float targetAlpha, bool deactivateOnComplete)
+    {
+        panelCanvasGroup.alpha = targetAlpha;
+
+        if (deactivateOnComplete)
+            gameObject.SetActive(false);
     }
 
     #endregion

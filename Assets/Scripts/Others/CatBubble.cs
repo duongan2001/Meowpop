@@ -144,6 +144,21 @@ public class CatBubble : MonoBehaviour
             PopBubble();
     }
 
+    /// <summary>
+    /// Xoay mọi mèo còn trong bóng về thẳng đứng hoặc về góc nghiêng ban đầu.
+    /// </summary>
+    public void SetCatsUpright(bool upright, bool animate)
+    {
+        if (cats == null)
+            return;
+
+        foreach (Cat cat in cats)
+        {
+            if (cat.gameObject.activeSelf)
+                cat.SetUpright(upright, animate);
+        }
+    }
+
     #endregion
 
 

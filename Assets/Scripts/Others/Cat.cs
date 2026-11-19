@@ -22,6 +22,7 @@ public class Cat : MonoBehaviour
     Vector3 originalScale;
     Vector2 originalAnchoredPosition;
     Quaternion originalLocalRotation;
+    bool isUpright;     // đang được xoay thẳng đứng (thuộc nhóm bóng đầu)
     CatBubble catBubble;
 
     // Bắn ra khi người chơi bấm vào mèo, logic game lắng nghe để quyết định mèo bay đi đâu
@@ -34,6 +35,10 @@ public class Cat : MonoBehaviour
     [Header("Wink")]
     [SerializeField] float minWinkDelay = 6f;
     [SerializeField] float maxWinkDelay = 10f;
+
+    [Header("Upright")]
+    [Tooltip("Tốc độ xoay mèo về thẳng đứng (độ/giây). Mèo đã thẳng thì luôn được giữ thẳng dù bóng xoay")]
+    [SerializeField] float uprightRotateSpeed = 720f;
 
     [Header("Fly To Target")]
     [SerializeField] float flyDuration = 0.45f;
@@ -99,6 +104,18 @@ public class Cat : MonoBehaviour
         }
 
         transform.DOKill();
+    }
+
+    private void LateUpdate()
+    {
+        // Giữ mèo thẳng đứng mỗi frame, chạy sau physics / animation của bóng nên bóng lăn mèo vẫn thẳng
+        if (!isUpright || isFlying)
+            return;
+
+        if (transform.rotation == Quaternion.identity)
+            return;
+
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.identity, uprightRotateSpeed * Time.deltaTime);
     }
 
     private void OnDestroy()
@@ -168,7 +185,31 @@ public class Cat : MonoBehaviour
         ReturnToOriginalParent();
 
         isFlying = false;
+        isUpright = false;
         transform.localScale = originalScale;
+    }
+
+    /// <summary>
+    /// Bật / tắt chế độ đứng thẳng. Bật thì LateUpdate giữ mèo luôn thẳng (góc world = 0).
+    /// animate = false thì xoay thẳng ngay, true thì xoay dần theo uprightRotateSpeed.
+    /// Tắt thì trả về góc nghiêng ban đầu trong bóng.
+    /// </summary>
+    public void SetUpright(bool upright, bool animate)
+    {
+        // Chưa Awake / đang bay / đã ở đúng trạng thái thì bỏ qua
+        if (rectTransform == null || isFlying || isUpright == upright)
+            return;
+
+        isUpright = upright;
+
+        if (!upright)
+        {
+            rectTransform.localRotation = originalLocalRotation;
+            return;
+        }
+
+        if (!animate || !gameObject.activeInHierarchy)
+            transform.rotation = Quaternion.identity;
     }
 
     void ReturnToOriginalParent()
