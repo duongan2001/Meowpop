@@ -100,6 +100,33 @@ public class CatBed : MonoBehaviour
         SetupBed();
     }
 
+    /// <summary>
+    /// Mở khóa ổ có hiệu ứng giống lúc đổi ổ: thu nhỏ về 0 → mở khóa, nhận loại mèo → phóng to lại.
+    /// delay: chờ trước khi chạy (VD chờ panel mua mờ đi).
+    /// </summary>
+    public void UnlockBedWithAnimation(float delay = 0f)
+    {
+        if (IsUnlocked)
+            return;
+
+        PlayerPrefs.SetInt(GetUnlockKey(), 1);
+        PlayerPrefs.Save();
+
+        StopCompleteCoroutine();
+        completeCoroutine = StartCoroutine(UnlockBedRoutine(delay));
+    }
+
+    /// <summary>
+    /// Gán vào OnClick của Button trên dấu + (catBedLockState) trong Editor: mở panel mua ổ.
+    /// </summary>
+    public void OnLockedBedClick()
+    {
+        if (IsUnlocked)
+            return;
+
+        GameManager.Instance.OpenBuyCatbedPanel(this);
+    }
+
     string GetUnlockKey()
     {
         int bedIndex = Array.IndexOf(GameManager.Instance.catBeds, this);
@@ -401,6 +428,26 @@ public class CatBed : MonoBehaviour
         ResetBed();
 
         // Zoom ổ (đã nhận loại mới) về kích thước ban đầu
+        zoomTarget.localScale = Vector3.zero;
+        zoomTarget.DOScale(zoomTargetScale, zoomInDuration).SetEase(Ease.OutBack);
+    }
+
+    IEnumerator UnlockBedRoutine(float delay)
+    {
+        if (delay > 0f)
+            yield return new WaitForSeconds(delay);
+
+        // Zoom ổ về 0
+        zoomTarget.DOKill();
+        yield return zoomTarget.DOScale(Vector3.zero, zoomOutDuration).SetEase(Ease.InBack).WaitForCompletion();
+
+        // Gán null trước khi SetupBed để ClearBed bên trong không dừng chính coroutine này
+        completeCoroutine = null;
+
+        // Tắt dấu khóa, nhận loại mèo, kéo mèo cùng loại trong khay / ô 6 lên
+        SetupBed();
+
+        // Zoom ổ (đã mở) về kích thước ban đầu
         zoomTarget.localScale = Vector3.zero;
         zoomTarget.DOScale(zoomTargetScale, zoomInDuration).SetEase(Ease.OutBack);
     }

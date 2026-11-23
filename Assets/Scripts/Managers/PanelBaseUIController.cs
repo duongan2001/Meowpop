@@ -9,6 +9,8 @@ public class PanelBaseUIController : MonoBehaviour
     [SerializeField] CanvasGroup panelCanvasGroup;
     [SerializeField] float fadeDuration = 0.25f;
     [SerializeField] float showDelayTime = 0.25f;
+    [Tooltip("Bật panel này thì tự tắt panel đang mở trước đó (VD: không đủ xu -> tắt Buy Catbed rồi mới hiện Buy Coin)")]
+    [SerializeField] bool closeOtherPanelOnShow = true;
 
     [Header("--- INTERSTITIAL AD SETTINGS ---")]
     [SerializeField] private bool showInterstitialOnOpen = false;
@@ -16,6 +18,9 @@ public class PanelBaseUIController : MonoBehaviour
 
     private Coroutine fadeCoroutine;
     private Coroutine showDelayCoroutine;
+
+    // Panel đang mở hiện tại (chỉ tính panel bật closeOtherPanelOnShow)
+    static PanelBaseUIController currentPanel;
 
     #endregion
 
@@ -35,6 +40,9 @@ public class PanelBaseUIController : MonoBehaviour
     {
         fadeCoroutine = null;
         showDelayCoroutine = null;
+
+        if (currentPanel == this)
+            currentPanel = null;
     }
 
     #endregion
@@ -45,6 +53,7 @@ public class PanelBaseUIController : MonoBehaviour
     public virtual void Show()
     {
         CancelShowDelay();
+        CloseCurrentPanel();
 
         // Panel đang tắt thì bắt đầu từ alpha 0 để luôn có hiệu ứng fade in
         if (!gameObject.activeSelf)
@@ -62,6 +71,9 @@ public class PanelBaseUIController : MonoBehaviour
     public virtual void ShowDelay()
     {
         CancelShowDelay();
+
+        // Tắt panel cũ ngay, panel mới hiện sau showDelayTime
+        CloseCurrentPanel();
 
         gameObject.SetActive(true);
 
@@ -89,10 +101,28 @@ public class PanelBaseUIController : MonoBehaviour
     {
         CancelShowDelay();
 
+        if (currentPanel == this)
+            currentPanel = null;
+
         panelCanvasGroup.interactable = false;
         panelCanvasGroup.blocksRaycasts = false;
 
         StartFade(0f, true);
+    }
+
+    /// <summary>
+    /// Tắt panel đang mở (nếu khác panel này) rồi đánh dấu panel này là panel hiện tại.
+    /// </summary>
+    void CloseCurrentPanel()
+    {
+        if (!closeOtherPanelOnShow)
+            return;
+
+        PanelBaseUIController previousPanel = currentPanel;
+        currentPanel = this;
+
+        if (previousPanel != null && previousPanel != this && previousPanel.gameObject.activeSelf)
+            previousPanel.Hide();
     }
 
     #endregion

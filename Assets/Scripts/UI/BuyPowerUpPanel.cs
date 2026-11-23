@@ -121,8 +121,7 @@ public class BuyPowerUpPanel : PanelBaseUIController
 
         if (!PowerUpManager.Instance.CanAfford(currentType))
         {
-            // TODO: mở Panel - Buy Coin
-            Debug.Log("[BuyPowerUpPanel] Không đủ xu để mua power-up");
+            GameManager.Instance.OpenBuyCoinPanel();
             return;
         }
 

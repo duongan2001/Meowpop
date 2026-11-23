@@ -1,4 +1,5 @@
-﻿using DG.Tweening;
+﻿using System;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -37,6 +38,11 @@ public class CatBubble : MonoBehaviour
     public Cat[] AllCats => allCats;
     public int RemainingCat => remainingCat;
     public float Radius => bubbleCollider.radius;
+
+    /// <summary>
+    /// Gọi ngay khi bóng hết mèo và bắt đầu vỡ. GameManager nghe để bật thêm bóng mới.
+    /// </summary>
+    public event Action<CatBubble> OnPopped;
 
     #endregion
 
@@ -141,7 +147,10 @@ public class CatBubble : MonoBehaviour
         remainingCat--;
 
         if (remainingCat == 0)
+        {
             PopBubble();
+            OnPopped?.Invoke(this);
+        }
     }
 
     /// <summary>

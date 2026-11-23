@@ -30,10 +30,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] float bubbleSpawnInterval = 0.5f;
     [Tooltip("Mèo trong bao nhiêu bóng đầu tiên (còn mèo) luôn đứng thẳng")]
     [SerializeField] int uprightBubbleCount = 20;
+    [Tooltip("Số bóng (còn mèo) hiện trên màn hình tối đa. Vỡ 1 bóng thì bật thêm bóng tiếp theo")]
+    [SerializeField] int maxActiveBubbles = 30;
 
     [Header("Panels")]
     [SerializeField] VictoryPanel victoryPanel;
     [SerializeField] LosePanel losePanel;
+    [SerializeField] BuyCatbedPanel buyCatbedPanel;
+    [SerializeField] BuyCoinPanel buyCoinPanel;
 
     Coroutine spawnCoroutine;
     bool isGameOver;            // dừng chơi (thắng hoặc thua)
@@ -44,6 +48,10 @@ public class GameManager : MonoBehaviour
     readonly List<Vector2> placedPositions = new List<Vector2>();
     readonly List<float> placedRadiuses = new List<float>();
 
+    int levelBubbleCount;       // số bóng của level hiện tại (bóng thừa của level trước nằm sau trong pool)
+    int placedBubbleCount;      // số bóng (theo thứ tự sinh) đã được chọn vị trí, chờ hoặc đã hiện
+    int shownBubbleCount;       // số bóng đã hiện lên màn hình
+
     #endregion
 
 
@@ -52,7 +60,7 @@ public class GameManager : MonoBehaviour
     public IReadOnlyList<CatBubble> SpawnedBubbles => spawnedBubbles;
 
     // Đang sinh bóng dở, dùng khi check thắng (chưa sinh hết bóng thì chưa thắng)
-    public bool IsSpawningBubbles => spawnCoroutine != null;
+    public bool IsSpawningBubbles => spawnCoroutine != null || shownBubbleCount < levelBubbleCount;
     public bool IsGameOver => isGameOver;
     public int CollectedCatCount => collectedCatCount;
     public int PlayingLevelNumber => playingLevelNumber;
@@ -295,6 +303,28 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// CatBed gọi khi bấm vào ổ đang khóa: mở panel mua ổ.
+    /// </summary>
+    public void OpenBuyCatbedPanel(CatBed bed)
+    {
+        if (isGameOver || buyCatbedPanel == null)
+            return;
+
+        buyCatbedPanel.ShowBuyCatbed(bed);
+    }
+
+    /// <summary>
+    /// Mở panel nhận xu (gán vào nút + cạnh ô xu, hoặc gọi khi không đủ xu).
+    /// </summary>
+    public void OpenBuyCoinPanel()
+    {
+        if (buyCoinPanel == null)
+            return;
+
+        buyCoinPanel.ShowBuyCoin();
+    }
+
     void OnTrayFull()
     {
         isGameOver = true;
@@ -309,6 +339,10 @@ public class GameManager : MonoBehaviour
 
     #region BUBBLE METHODS
 
+    /// <summary>
+    /// Setup dữ liệu cho TOÀN BỘ bóng của level, nhưng chỉ đặt vị trí + hiện tối đa maxActiveBubbles bóng.
+    /// Bóng còn lại chờ, mỗi khi 1 bóng vỡ thì bật thêm (OnBubblePopped).
+    /// </summary>
     void SpawnBubbles()
     {
         if (catBubblePrefab == null || bubbleContainer == null)
@@ -325,33 +359,52 @@ public class GameManager : MonoBehaviour
         }
 
         IReadOnlyList<int[]> bubbleCatIDs = LevelManager.Instance.BubbleCatIDs;
-        List<CatBubble> activeBubbles = new List<CatBubble>(bubbleCatIDs.Count);
+        levelBubbleCount = bubbleCatIDs.Count;
+        placedBubbleCount = 0;
+        shownBubbleCount = 0;
 
-        // Setup bóng, dùng lại bóng cũ nếu đã sinh ở level trước
-        for (int i = 0; i < bubbleCatIDs.Count; i++)
+        // Setup đủ dữ liệu mèo cho mọi bóng (ổ / power-up cần biết mèo của cả bóng chưa hiện), dùng lại bóng cũ nếu có
+        for (int i = 0; i < levelBubbleCount; i++)
         {
             CatBubble bubble = GetBubble(i);
             bubble.SetUpCatBubble(bubbleCatIDs[i]);
-            activeBubbles.Add(bubble);
+
+            // Ẩn đi, chờ tới lượt mới hiện
+            bubble.gameObject.SetActive(false);
         }
 
         // Tắt các bóng thừa của level trước (reset trước để mèo đang bay dở không bay tiếp)
-        for (int i = bubbleCatIDs.Count; i < spawnedBubbles.Count; i++)
+        for (int i = levelBubbleCount; i < spawnedBubbles.Count; i++)
         {
             spawnedBubbles[i].ResetBubble();
             spawnedBubbles[i].gameObject.SetActive(false);
         }
 
-        // Giữ thứ tự sinh theo dữ liệu level (đã random sẵn)
-        List<CatBubble> spawnOrder = new List<CatBubble>(activeBubbles);
+        PlaceFirstBubbles();
 
-        // Tính trước vị trí cho tất cả bóng, đặt bóng to trước để dễ xếp không bị chồng
-        activeBubbles.Sort((a, b) => GetBubbleRadius(b).CompareTo(GetBubbleRadius(a)));
+        // Mèo trong các bóng đầu đứng thẳng ngay từ lúc sinh
+        RefreshUprightCats(false);
+
+        StartShowBubbles();
+    }
+
+    /// <summary>
+    /// Đặt vị trí cho nhóm bóng đầu tiên (tối đa maxActiveBubbles), đặt bóng to trước để dễ xếp không bị chồng.
+    /// </summary>
+    void PlaceFirstBubbles()
+    {
+        int firstCount = Mathf.Min(levelBubbleCount, Mathf.Max(1, maxActiveBubbles));
+
+        List<CatBubble> firstBubbles = new List<CatBubble>(firstCount);
+        for (int i = 0; i < firstCount; i++)
+            firstBubbles.Add(spawnedBubbles[i]);
+
+        firstBubbles.Sort((a, b) => GetBubbleRadius(b).CompareTo(GetBubbleRadius(a)));
 
         placedPositions.Clear();
         placedRadiuses.Clear();
 
-        foreach (CatBubble bubble in activeBubbles)
+        foreach (CatBubble bubble in firstBubbles)
         {
             float radius = GetBubbleRadius(bubble);
             Vector2 pos = FindBubblePosition(radius);
@@ -359,31 +412,99 @@ public class GameManager : MonoBehaviour
             bubble.transform.localPosition = pos;
             placedPositions.Add(pos);
             placedRadiuses.Add(radius);
-
-            // Ẩn đi, chờ tới lượt mới hiện
-            bubble.gameObject.SetActive(false);
         }
 
-        // Mèo trong các bóng đầu đứng thẳng ngay từ lúc sinh
-        RefreshUprightCats(false);
-
-        spawnCoroutine = StartCoroutine(SpawnBubblesSequentially(spawnOrder));
+        placedBubbleCount = firstCount;
     }
 
     /// <summary>
-    /// Hiện lần lượt từng bóng, mỗi bóng cách nhau bubbleSpawnInterval giây.
+    /// CatBubble gọi khi vỡ: còn bóng chờ và chưa đủ maxActiveBubbles bóng trên màn hình thì bật thêm.
     /// </summary>
-    IEnumerator SpawnBubblesSequentially(List<CatBubble> bubbles)
+    void OnBubblePopped(CatBubble poppedBubble)
+    {
+        int index = spawnedBubbles.IndexOf(poppedBubble);
+        if (index < 0 || index >= levelBubbleCount)
+            return;
+
+        bool hasNewBubble = false;
+
+        while (placedBubbleCount < levelBubbleCount && GetAliveBubbleCount() < maxActiveBubbles)
+        {
+            PlaceNextBubble();
+            hasNewBubble = true;
+        }
+
+        if (!hasNewBubble)
+            return;
+
+        // Bóng mới lọt vào nhóm bóng đầu thì mèo của nó xoay thẳng
+        RefreshUprightCats(true);
+        StartShowBubbles();
+    }
+
+    /// <summary>
+    /// Đặt bóng tiếp theo (theo thứ tự sinh) vào chỗ trống, tránh các bóng đang còn trên màn hình.
+    /// </summary>
+    void PlaceNextBubble()
+    {
+        CatBubble bubble = spawnedBubbles[placedBubbleCount];
+
+        placedPositions.Clear();
+        placedRadiuses.Clear();
+
+        // Chỉ tránh bóng còn mèo (bóng đang vỡ coi như đã trống chỗ)
+        for (int i = 0; i < placedBubbleCount; i++)
+        {
+            CatBubble placed = spawnedBubbles[i];
+            if (placed.RemainingCat <= 0)
+                continue;
+
+            placedPositions.Add(placed.transform.localPosition);
+            placedRadiuses.Add(GetBubbleRadius(placed));
+        }
+
+        bubble.transform.localPosition = FindBubblePosition(GetBubbleRadius(bubble));
+        placedBubbleCount++;
+    }
+
+    // Số bóng đã đặt (đang hiện hoặc chờ hiện) và còn mèo
+    int GetAliveBubbleCount()
+    {
+        int count = 0;
+
+        for (int i = 0; i < placedBubbleCount; i++)
+        {
+            if (spawnedBubbles[i].RemainingCat > 0)
+                count++;
+        }
+
+        return count;
+    }
+
+    void StartShowBubbles()
+    {
+        if (spawnCoroutine == null && shownBubbleCount < placedBubbleCount)
+            spawnCoroutine = StartCoroutine(ShowPlacedBubbles());
+    }
+
+    /// <summary>
+    /// Hiện lần lượt các bóng đã đặt vị trí, mỗi bóng cách nhau bubbleSpawnInterval giây.
+    /// Trong lúc chạy mà có bóng mới được đặt thêm thì hiện luôn bóng đó.
+    /// </summary>
+    IEnumerator ShowPlacedBubbles()
     {
         WaitForSeconds wait = new WaitForSeconds(bubbleSpawnInterval);
 
-        for (int i = 0; i < bubbles.Count; i++)
+        while (shownBubbleCount < placedBubbleCount)
         {
-            bubbles[i].gameObject.SetActive(true);
-            bubbles[i].PlayAppear();
+            CatBubble bubble = spawnedBubbles[shownBubbleCount];
+            shownBubbleCount++;
+
+            bubble.gameObject.SetActive(true);
+            bubble.PlayAppear();
 
             // Bóng cuối không cần chờ
-            if (i < bubbles.Count - 1)
+            if (shownBubbleCount < placedBubbleCount)
                 yield return wait;
         }
 
@@ -423,6 +544,8 @@ public class GameManager : MonoBehaviour
         // Lắng nghe click của mọi con mèo trong bóng (chỉ đăng ký 1 lần lúc tạo, bóng được dùng lại qua các level)
         foreach (Cat cat in bubble.AllCats)
             cat.OnClicked += OnCatClicked;
+
+        bubble.OnPopped += OnBubblePopped;
 
         return bubble;
     }
