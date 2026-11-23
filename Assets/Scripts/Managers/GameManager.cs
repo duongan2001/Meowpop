@@ -113,6 +113,10 @@ public class GameManager : MonoBehaviour
         // Tới level mở thử thách mới thì hiện popup giới thiệu
         if (ChallengeManager.Instance != null)
             ChallengeManager.Instance.CheckNewChallenges(playingLevelNumber);
+
+        // Cập nhật nút power-up, tặng lượt free nếu vừa mở khóa
+        if (PowerUpManager.Instance != null)
+            PowerUpManager.Instance.OnLevelLoaded(playingLevelNumber);
     }
 
     /// <summary>
@@ -210,6 +214,10 @@ public class GameManager : MonoBehaviour
     void OnCatClicked(Cat cat)
     {
         if (isGameOver || cat.IsFlying)
+            return;
+
+        // Đang chạy power-up trộn mèo thì không cho bấm
+        if (PowerUpManager.Instance != null && PowerUpManager.Instance.IsBusy)
             return;
 
         SendCatToTarget(cat);
@@ -382,7 +390,7 @@ public class GameManager : MonoBehaviour
     /// Mèo trong uprightBubbleCount bóng đầu (theo thứ tự sinh, bỏ bóng đã vỡ) đứng thẳng,
     /// các bóng sau giữ góc nghiêng ban đầu.
     /// </summary>
-    void RefreshUprightCats(bool animate)
+    public void RefreshUprightCats(bool animate)
     {
         int levelBubbleCount = Mathf.Min(LevelManager.Instance.BubbleCatIDs.Count, spawnedBubbles.Count);
         int uprightCount = 0;
@@ -478,6 +486,46 @@ public class GameManager : MonoBehaviour
 
 
     #region CAT QUERY METHODS
+
+    /// <summary>
+    /// Lấy mèo đang hiển thị trong maxBubbleCount bóng đầu (thứ tự sinh, bỏ bóng đã vỡ / chưa sinh ra).
+    /// catID = -1: mọi loại. maxCats: lấy tối đa bao nhiêu con. Không lấy mèo đang bay.
+    /// Dùng cho power-up (làm đầy ổ, trộn mèo).
+    /// </summary>
+    public List<Cat> GetCatsInBubbles(int maxBubbleCount, int catID = -1, int maxCats = int.MaxValue)
+    {
+        List<Cat> result = new List<Cat>();
+
+        int levelBubbleCount = Mathf.Min(LevelManager.Instance.BubbleCatIDs.Count, spawnedBubbles.Count);
+        int checkedBubbles = 0;
+
+        for (int i = 0; i < levelBubbleCount && checkedBubbles < maxBubbleCount && result.Count < maxCats; i++)
+        {
+            CatBubble bubble = spawnedBubbles[i];
+
+            // Bóng đã vỡ hoặc chưa hiện lên màn hình thì bỏ qua
+            if (bubble.RemainingCat <= 0 || bubble.Cats == null || !bubble.gameObject.activeInHierarchy)
+                continue;
+
+            checkedBubbles++;
+
+            foreach (Cat cat in bubble.Cats)
+            {
+                if (result.Count >= maxCats)
+                    break;
+
+                if (!cat.gameObject.activeInHierarchy || cat.IsFlying)
+                    continue;
+
+                if (catID >= 0 && cat.CatID != catID)
+                    continue;
+
+                result.Add(cat);
+            }
+        }
+
+        return result;
+    }
 
     /// <summary>
     /// Đếm số mèo còn lại của từng loại chưa được ổ nào nhận:

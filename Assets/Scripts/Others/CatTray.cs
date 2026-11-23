@@ -26,17 +26,27 @@ public class CatTray : MonoBehaviour
     [SerializeField] Sprite trayLastCellSprite;
 
     [SerializeField] Image[] catInTrayImages;
-    [Tooltip("Text số mèo đã bị hút vào ô extra (ô thứ 6)")]
+
+    [Header("Vacuum (ô số 6)")]
+    [Tooltip("Vacuum Cat Count Text - số mèo đã bị hút vào ô số 6")]
+    [FormerlySerializedAs("suckedCatCountText")]
     [FormerlySerializedAs("powerupUsedCatNumberText")]   // giữ nguyên reference đã kéo trong Inspector
-    [SerializeField] Text suckedCatCountText;
+    [SerializeField] Text vacuumCatCountText;
+    [Tooltip("Cats - Power-up: bảng hiện các loại mèo đã hút, bật/tắt khi bấm ô số 6")]
+    [SerializeField] GameObject vacuumCatsPopup;
+    [Tooltip("Cat Count 1..5 trong Cats - Power-up")]
+    [SerializeField] VacuumCatItem[] vacuumCatItems;
+    [SerializeField] float vacuumPopupDuration = 0.2f;
 
     // Dữ liệu từng ô chờ: catID hoặc EMPTY
     int[] trayCatIDs = new int[MAIN_CELL_COUNT];
     // Mèo đã bay tới ô chưa (đã giữ chỗ nhưng còn đang bay thì chưa hiện hình)
     bool[] isCatArrived = new bool[MAIN_CELL_COUNT];
 
-    // Danh sách ID mèo đã bị hút vào ô extra
-    readonly List<int> suckedCatIDs = new List<int>();
+    // Danh sách ID mèo đã bị hút vào ô số 6
+    readonly List<int> vacuumedCatIDs = new List<int>();
+    int displayedVacuumCount;   // số đang hiện trên ô 6 (tăng dần khi từng con bay tới)
+    Vector3 vacuumPopupScale = Vector3.one;
 
     [Header("Fly To Bed")]
     [SerializeField] float flyToBedDuration = 0.35f;
@@ -52,7 +62,7 @@ public class CatTray : MonoBehaviour
 
     #region PROPERTIES
 
-    public IReadOnlyList<int> SuckedCatIDs => suckedCatIDs;
+    public IReadOnlyList<int> VacuumedCatIDs => vacuumedCatIDs;
     public int CatCountInTray => CountCatsInTray();
     public bool IsFull => CountCatsInTray() >= MAIN_CELL_COUNT;
 
@@ -63,6 +73,9 @@ public class CatTray : MonoBehaviour
 
     private void Awake()
     {
+        if (vacuumCatsPopup != null)
+            vacuumPopupScale = vacuumCatsPopup.transform.localScale;
+
         ResetTray();
     }
 
@@ -108,7 +121,9 @@ public class CatTray : MonoBehaviour
             isCatArrived[i] = false;
         }
 
-        suckedCatIDs.Clear();
+        vacuumedCatIDs.Clear();
+        displayedVacuumCount = 0;
+        HideVacuumPopup(false);
         SetExtraCellActive(false);
 
         RefreshCatImages();
@@ -419,45 +434,180 @@ public class CatTray : MonoBehaviour
     #endregion
 
 
-    #region POWERUP METHODS
+    #region VACUUM METHODS
 
     /// <summary>
-    /// Powerup hút: chuyển toàn bộ mèo đã tới khay vào ô extra (ô thứ 6).
-    /// Mèo đang bay tới khay thì giữ lại.
+    /// Power-up Dọn khay: hút toàn bộ mèo đã tới khay vào ô số 6 (có hiệu ứng bay vào).
+    /// Mèo đang bay tới khay thì giữ lại. Trả về true nếu có mèo được hút (để PowerUpManager trừ lượt).
     /// </summary>
-    public void UseSuckPowerup()
+    public bool UseVacuumPowerup()
     {
-        int lastSuckedCatID = EMPTY;
+        List<int> cellIndexes = new List<int>();
 
         for (int i = 0; i < MAIN_CELL_COUNT; i++)
         {
-            if (trayCatIDs[i] == EMPTY || !isCatArrived[i])
-                continue;
-
-            suckedCatIDs.Add(trayCatIDs[i]);
-            lastSuckedCatID = trayCatIDs[i];
-
-            trayCatIDs[i] = EMPTY;
-            isCatArrived[i] = false;
+            if (trayCatIDs[i] != EMPTY && isCatArrived[i])
+                cellIndexes.Add(i);
         }
 
-        if (lastSuckedCatID == EMPTY)
-            return;
+        if (cellIndexes.Count == 0)
+            return false;
+
+        // Bật ô 6 và build lại layout ngay để lấy đúng vị trí đích
+        SetExtraCellActive(true);
+        SetupTrayCellImages();
+        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)trayCellImages[EXTRA_CELL_INDEX].transform.parent);
+
+        RectTransform vacuumTarget = GetVacuumTargetRect();
+
+        for (int n = 0; n < cellIndexes.Count; n++)
+        {
+            int cellIndex = cellIndexes[n];
+            int catID = trayCatIDs[cellIndex];
+
+            vacuumedCatIDs.Add(catID);
+
+            // Ảnh bay là bản sao, phải tạo trước khi xóa ô
+            FlyCatImage(catInTrayImages[cellIndex], vacuumTarget, n * flyToBedStagger, () => OnCatVacuumed(catID));
+
+            trayCatIDs[cellIndex] = EMPTY;
+            isCatArrived[cellIndex] = false;
+        }
 
         CompactTray();
 
-        SetExtraCellActive(true);
-        SetupTrayCellImages();
+        // Bảng loại mèo đang mở thì cập nhật luôn
+        if (IsVacuumPopupOpen())
+            RefreshVacuumCatItems();
 
-        // Ô extra hiện hình con mèo hút vào cuối cùng
+        return true;
+    }
+
+    /// <summary>
+    /// Gán vào OnClick của Button trên Cell 6 trong Editor: bật / tắt bảng các loại mèo đã hút.
+    /// </summary>
+    public void OnVacuumCellClick()
+    {
+        if (IsVacuumPopupOpen())
+            HideVacuumPopup(true);
+        else
+            ShowVacuumPopup();
+    }
+
+    void OnCatVacuumed(int catID)
+    {
+        displayedVacuumCount++;
+
+        if (vacuumCatCountText != null)
+            vacuumCatCountText.text = displayedVacuumCount.ToString();
+
+        // Ô 6 hiện hình con mèo vừa hút vào (nếu ô có ảnh mèo)
         if (EXTRA_CELL_INDEX < catInTrayImages.Length && catInTrayImages[EXTRA_CELL_INDEX] != null)
         {
-            catInTrayImages[EXTRA_CELL_INDEX].sprite = GetCatSprite(lastSuckedCatID);
+            catInTrayImages[EXTRA_CELL_INDEX].sprite = GetCatSprite(catID);
             catInTrayImages[EXTRA_CELL_INDEX].gameObject.SetActive(true);
         }
 
-        if (suckedCatCountText != null)
-            suckedCatCountText.text = suckedCatIDs.Count.ToString();
+        // Ô 6 nảy nhẹ mỗi lần có mèo bay vào
+        Transform cell = trayCellImages[EXTRA_CELL_INDEX].transform;
+        cell.DOKill(true);
+        cell.DOPunchScale(Vector3.one * 0.15f, 0.2f, 1);
+    }
+
+    RectTransform GetVacuumTargetRect()
+    {
+        if (EXTRA_CELL_INDEX < catInTrayImages.Length && catInTrayImages[EXTRA_CELL_INDEX] != null)
+            return catInTrayImages[EXTRA_CELL_INDEX].rectTransform;
+
+        return trayCellImages[EXTRA_CELL_INDEX].rectTransform;
+    }
+
+    void ShowVacuumPopup()
+    {
+        if (vacuumCatsPopup == null || vacuumedCatIDs.Count == 0)
+            return;
+
+        RefreshVacuumCatItems();
+
+        Transform popup = vacuumCatsPopup.transform;
+        popup.DOKill();
+        vacuumCatsPopup.SetActive(true);
+        popup.localScale = Vector3.zero;
+        popup.DOScale(vacuumPopupScale, vacuumPopupDuration).SetEase(Ease.OutBack);
+    }
+
+    void HideVacuumPopup(bool animate)
+    {
+        if (vacuumCatsPopup == null)
+            return;
+
+        Transform popup = vacuumCatsPopup.transform;
+        popup.DOKill();
+
+        if (!animate || !vacuumCatsPopup.activeInHierarchy)
+        {
+            popup.localScale = vacuumPopupScale;
+            vacuumCatsPopup.SetActive(false);
+            return;
+        }
+
+        popup.DOScale(Vector3.zero, vacuumPopupDuration).SetEase(Ease.InBack)
+            .OnComplete(() =>
+            {
+                vacuumCatsPopup.SetActive(false);
+                popup.localScale = vacuumPopupScale;
+            });
+    }
+
+    bool IsVacuumPopupOpen()
+    {
+        return vacuumCatsPopup != null && vacuumCatsPopup.activeSelf;
+    }
+
+    /// <summary>
+    /// Gom mèo đã hút theo loại (giữ thứ tự hút vào), điền vào Cat Count 1..5, ô thừa thì ẩn.
+    /// </summary>
+    void RefreshVacuumCatItems()
+    {
+        if (vacuumCatItems == null)
+            return;
+
+        List<int> catTypes = new List<int>();
+        Dictionary<int, int> catCounts = new Dictionary<int, int>();
+
+        foreach (int catID in vacuumedCatIDs)
+        {
+            if (!catCounts.ContainsKey(catID))
+            {
+                catTypes.Add(catID);
+                catCounts[catID] = 0;
+            }
+
+            catCounts[catID]++;
+        }
+
+        if (catTypes.Count > vacuumCatItems.Length)
+            Debug.LogWarning($"[CatTray] Có {catTypes.Count} loại mèo trong ô 6 nhưng chỉ có {vacuumCatItems.Length} ô hiển thị");
+
+        for (int i = 0; i < vacuumCatItems.Length; i++)
+        {
+            VacuumCatItem item = vacuumCatItems[i];
+            bool hasCat = i < catTypes.Count;
+
+            if (item.root != null)
+                item.root.SetActive(hasCat);
+
+            if (!hasCat)
+                continue;
+
+            int catID = catTypes[i];
+
+            if (item.countText != null)
+                item.countText.text = $"x{catCounts[catID]}";
+
+            if (item.catIcon != null)
+                item.catIcon.sprite = GetCatSprite(catID);
+        }
     }
 
     void SetExtraCellActive(bool isActive)
@@ -466,11 +616,29 @@ public class CatTray : MonoBehaviour
             trayCellImages[EXTRA_CELL_INDEX].gameObject.SetActive(isActive);
 
         if (EXTRA_CELL_INDEX < catInTrayImages.Length && catInTrayImages[EXTRA_CELL_INDEX] != null)
-            catInTrayImages[EXTRA_CELL_INDEX].gameObject.SetActive(isActive);
+            catInTrayImages[EXTRA_CELL_INDEX].gameObject.SetActive(false);
 
-        if (suckedCatCountText != null)
-            suckedCatCountText.gameObject.SetActive(isActive);
+        if (vacuumCatCountText != null)
+        {
+            vacuumCatCountText.gameObject.SetActive(isActive);
+            vacuumCatCountText.text = displayedVacuumCount.ToString();
+        }
     }
 
     #endregion
+}
+
+
+/// <summary>
+/// 1 dòng trong bảng Cats - Power-up: "x5 [hình mèo]".
+/// </summary>
+[Serializable]
+public class VacuumCatItem
+{
+    [Tooltip("Cat Count N")]
+    public GameObject root;
+    [Tooltip("Count Text")]
+    public Text countText;
+    [Tooltip("Cat Icon")]
+    public Image catIcon;
 }
