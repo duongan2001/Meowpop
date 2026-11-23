@@ -202,6 +202,13 @@ public class CatBed : MonoBehaviour
                 if (!candidates.Contains(trayCatID))
                     candidates.Add(trayCatID);
             }
+
+            // Loại mèo đang nằm trong ô 6 (power-up Dọn khay)
+            foreach (int vacuumedCatID in catTray.GetVacuumedCatTypes())
+            {
+                if (!candidates.Contains(vacuumedCatID))
+                    candidates.Add(vacuumedCatID);
+            }
         }
 
         // Thêm mọi loại còn lại (nằm ngoài 20 bóng đầu), nhiều trước ít sau
@@ -337,8 +344,14 @@ public class CatBed : MonoBehaviour
     {
         CatTray catTray = GameManager.Instance.catTray;
 
-        if (catTray != null)
-            catTray.SendCatsToBed(this);
+        if (catTray == null)
+            return;
+
+        // Ưu tiên mèo trong khay (giảm nguy cơ đầy khay), còn chỗ thì lấy tiếp từ ô 6
+        catTray.SendCatsToBed(this);
+
+        if (!IsFull)
+            catTray.SendVacuumCatsToBed(this);
     }
 
     void UpdateCollectedCountText()

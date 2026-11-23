@@ -351,13 +351,14 @@ public class CatTray : MonoBehaviour
     /// <summary>
     /// Tạo 1 ảnh mèo bay từ vị trí ô khay tới chỗ trong ổ, tới nơi gọi onArrived.
     /// </summary>
-    void FlyCatImage(Image fromImage, RectTransform toRect, float delay, Action onArrived)
+    void FlyCatImage(Image fromImage, RectTransform toRect, float delay, Action onArrived, Sprite overrideSprite = null)
     {
         RectTransform flyContainer = GameManager.Instance.catFlyContainer;
         Image flyImage = GetFlyingImage(flyContainer);
         RectTransform flyRect = flyImage.rectTransform;
 
-        flyImage.sprite = fromImage.sprite;
+        // Ô 6 chỉ có 1 ảnh nhưng chứa nhiều loại mèo -> truyền sprite đúng loại
+        flyImage.sprite = overrideSprite != null ? overrideSprite : fromImage.sprite;
         flyRect.SetAsLastSibling();
 
         // Đặt đúng vị trí + kích thước của ảnh mèo trong ô khay
@@ -496,7 +497,8 @@ public class CatTray : MonoBehaviour
 
     void OnCatVacuumed(int catID)
     {
-        displayedVacuumCount++;
+        // Không vượt quá số mèo thật trong ô 6 (ổ có thể đã lấy mèo ra trong lúc mèo còn đang bay vào)
+        displayedVacuumCount = Mathf.Min(displayedVacuumCount + 1, vacuumedCatIDs.Count);
 
         if (vacuumCatCountText != null)
             vacuumCatCountText.text = displayedVacuumCount.ToString();
@@ -512,6 +514,95 @@ public class CatTray : MonoBehaviour
         Transform cell = trayCellImages[EXTRA_CELL_INDEX].transform;
         cell.DOKill(true);
         cell.DOPunchScale(Vector3.one * 0.15f, 0.2f, 1);
+    }
+
+    /// <summary>
+    /// Ổ mới nhận loại mèo: lấy mèo cùng loại trong ô 6 bay lên ổ (tối đa số chỗ trống của ổ).
+    /// Ô 6 hết mèo thì tự ẩn. Trả về số mèo đã gửi.
+    /// </summary>
+    public int SendVacuumCatsToBed(CatBed bed)
+    {
+        if (bed == null || bed.CatID == EMPTY || vacuumedCatIDs.Count == 0)
+            return 0;
+
+        RectTransform fromRect = GetVacuumTargetRect();
+        Image fromImage = fromRect.GetComponent<Image>();
+        Sprite catSprite = GetCatSprite(bed.CatID);
+        int sentCount = 0;
+
+        for (int i = vacuumedCatIDs.Count - 1; i >= 0 && !bed.IsFull; i--)
+        {
+            if (vacuumedCatIDs[i] != bed.CatID)
+                continue;
+
+            int slotIndex = bed.ReserveSlot();
+            FlyCatImage(fromImage, bed.GetSlotRect(slotIndex), sentCount * flyToBedStagger, bed.AddCatToBed, catSprite);
+
+            vacuumedCatIDs.RemoveAt(i);
+            sentCount++;
+        }
+
+        if (sentCount > 0)
+            RefreshVacuumCell();
+
+        return sentCount;
+    }
+
+    /// <summary>
+    /// Danh sách loại mèo đang nằm trong ô 6 (không trùng).
+    /// </summary>
+    public List<int> GetVacuumedCatTypes()
+    {
+        List<int> catTypes = new List<int>();
+
+        foreach (int catID in vacuumedCatIDs)
+        {
+            if (!catTypes.Contains(catID))
+                catTypes.Add(catID);
+        }
+
+        return catTypes;
+    }
+
+    /// <summary>
+    /// Số mèo của 1 loại đang nằm trong ô 6.
+    /// </summary>
+    public int CountVacuumedCatsByID(int catID)
+    {
+        int count = 0;
+
+        foreach (int vacuumedCatID in vacuumedCatIDs)
+        {
+            if (vacuumedCatID == catID)
+                count++;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Cập nhật ô 6 sau khi mèo được lấy ra: số, hình con mèo cuối, bảng loại mèo; hết mèo thì ẩn ô.
+    /// </summary>
+    void RefreshVacuumCell()
+    {
+        displayedVacuumCount = Mathf.Min(displayedVacuumCount, vacuumedCatIDs.Count);
+
+        if (vacuumedCatIDs.Count == 0)
+        {
+            HideVacuumPopup(true);
+            SetExtraCellActive(false);
+            SetupTrayCellImages();
+            return;
+        }
+
+        if (vacuumCatCountText != null)
+            vacuumCatCountText.text = displayedVacuumCount.ToString();
+
+        if (EXTRA_CELL_INDEX < catInTrayImages.Length && catInTrayImages[EXTRA_CELL_INDEX] != null)
+            catInTrayImages[EXTRA_CELL_INDEX].sprite = GetCatSprite(vacuumedCatIDs[vacuumedCatIDs.Count - 1]);
+
+        if (IsVacuumPopupOpen())
+            RefreshVacuumCatItems();
     }
 
     RectTransform GetVacuumTargetRect()

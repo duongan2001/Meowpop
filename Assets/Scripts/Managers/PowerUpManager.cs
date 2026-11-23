@@ -286,7 +286,13 @@ public class PowerUpManager : MonoBehaviour
         // 1. Mèo cùng loại đang nằm trong khay
         CatTray catTray = GameManager.Instance.catTray;
         if (catTray != null)
+        {
             sentCount += catTray.SendCatsToBed(targetBed);
+
+            // Mèo cùng loại trong ô 6
+            if (!targetBed.IsFull)
+                sentCount += catTray.SendVacuumCatsToBed(targetBed);
+        }
 
         // 2. Mèo cùng loại trong các bóng đang hiển thị
         List<Cat> cats = GameManager.Instance.GetCatsInBubbles(int.MaxValue, targetBed.CatID, targetBed.FreeSlotCount);

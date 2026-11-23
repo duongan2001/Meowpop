@@ -10912,7 +10912,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 802157835}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1444693742}
+        m_TargetAssemblyTypeName: CatTray, Assembly-CSharp
+        m_MethodName: OnVacuumCellClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &810890325
 GameObject:
   m_ObjectHideFlags: 0
@@ -14579,7 +14591,8 @@ MonoBehaviour:
   maxPlaceAttempts: 50
   bubbleSpawnInterval: 0.5
   uprightBubbleCount: 30
-  victoryPanel: {fileID: 0}
+  victoryPanel: {fileID: 1157007468}
+  losePanel: {fileID: 1178867442}
 --- !u!1 &1143717389
 GameObject:
   m_ObjectHideFlags: 0
@@ -14924,6 +14937,7 @@ GameObject:
   - component: {fileID: 1178867440}
   - component: {fileID: 1178867439}
   - component: {fileID: 1178867441}
+  - component: {fileID: 1178867442}
   m_Layer: 5
   m_Name: Panel - Lose
   m_TagString: Untagged
@@ -15003,6 +15017,29 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &1178867442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1178867437}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e095d4b19992361418ef6988bc17522e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelCanvasGroup: {fileID: 1178867441}
+  fadeDuration: 0.25
+  showDelayTime: 0.25
+  showInterstitialOnOpen: 0
+  interstitialCooldown: 0
+  title: {fileID: 323752355}
+  catIcon: {fileID: 1921354111}
+  retryButton: {fileID: 1322146349}
+  scaleDuration: 0.3
+  catIdleScaleAmount: 0.04
+  catIdleDuration: 1.2
 --- !u!1 &1191410281
 GameObject:
   m_ObjectHideFlags: 0
@@ -16092,9 +16129,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 428794677}
-        m_TargetAssemblyTypeName: PowerUpManager, Assembly-CSharp
-        m_MethodName: TestShuffleCats
+      - m_Target: {fileID: 1287656730}
+        m_TargetAssemblyTypeName: PowerUpButton, Assembly-CSharp
+        m_MethodName: OnPowerUpButtonClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -17858,9 +17895,24 @@ MonoBehaviour:
   - {fileID: 2078502339}
   - {fileID: 306751722}
   - {fileID: 542048946}
-  vacuumCatCountText: {fileID: 0}
-  vacuumCatsPopup: {fileID: 0}
-  vacuumCatItems: []
+  vacuumCatCountText: {fileID: 11353591}
+  vacuumCatsPopup: {fileID: 643349547}
+  vacuumCatItems:
+  - root: {fileID: 1511686711}
+    countText: {fileID: 235746001}
+    catIcon: {fileID: 1932172349}
+  - root: {fileID: 759014472}
+    countText: {fileID: 1362900178}
+    catIcon: {fileID: 738819263}
+  - root: {fileID: 930157331}
+    countText: {fileID: 1698904010}
+    catIcon: {fileID: 1671679339}
+  - root: {fileID: 296835658}
+    countText: {fileID: 2128969901}
+    catIcon: {fileID: 60860631}
+  - root: {fileID: 934144911}
+    countText: {fileID: 28098466}
+    catIcon: {fileID: 643371405}
   vacuumPopupDuration: 0.2
   flyToBedDuration: 0.35
   flyToBedStagger: 0.08
@@ -18557,7 +18609,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1503036053
 RectTransform:
   m_ObjectHideFlags: 0
@@ -18622,7 +18674,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1178867437}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
         m_MethodName: 
         m_Mode: 1
@@ -18964,7 +19016,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1538116866
 RectTransform:
   m_ObjectHideFlags: 0
@@ -21669,9 +21721,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 428794677}
-        m_TargetAssemblyTypeName: PowerUpManager, Assembly-CSharp
-        m_MethodName: TestFillBed
+      - m_Target: {fileID: 1733957069}
+        m_TargetAssemblyTypeName: PowerUpButton, Assembly-CSharp
+        m_MethodName: OnPowerUpButtonClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -23200,7 +23252,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1856872220
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25190,7 +25242,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1981484897
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25255,10 +25307,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1157007468}
-        m_TargetAssemblyTypeName: VictoryPanel, Assembly-CSharp
-        m_MethodName: ShowVictory
-        m_Mode: 3
+      - m_Target: {fileID: 1178867442}
+        m_TargetAssemblyTypeName: LosePanel, Assembly-CSharp
+        m_MethodName: Show
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Panels")]
     [SerializeField] VictoryPanel victoryPanel;
+    [SerializeField] LosePanel losePanel;
 
     Coroutine spawnCoroutine;
     bool isGameOver;            // dừng chơi (thắng hoặc thua)
@@ -297,7 +298,10 @@ public class GameManager : MonoBehaviour
     void OnTrayFull()
     {
         isGameOver = true;
-        // TODO: mở popup thua
+
+        // TODO: sau này có thể mở Panel - Full Tray trước (cứu bằng power-up / quảng cáo), từ chối mới thua
+        if (losePanel != null)
+            losePanel.ShowLose();
     }
 
     #endregion
@@ -561,6 +565,13 @@ public class GameManager : MonoBehaviour
             {
                 counts.TryGetValue(trayCatID, out int count);
                 counts[trayCatID] = count + catTray.CountCatsByID(trayCatID);
+            }
+
+            // Mèo trong ô 6 (power-up Dọn khay) cũng còn chờ vào ổ
+            foreach (int vacuumedCatID in catTray.GetVacuumedCatTypes())
+            {
+                counts.TryGetValue(vacuumedCatID, out int count);
+                counts[vacuumedCatID] = count + catTray.CountVacuumedCatsByID(vacuumedCatID);
             }
         }
 
