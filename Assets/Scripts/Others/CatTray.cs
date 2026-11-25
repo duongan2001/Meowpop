@@ -65,6 +65,7 @@ public class CatTray : MonoBehaviour
     public IReadOnlyList<int> VacuumedCatIDs => vacuumedCatIDs;
     public int CatCountInTray => CountCatsInTray();
     public bool IsFull => CountCatsInTray() >= MAIN_CELL_COUNT;
+    public bool AreAllCatsArrived => CheckAllCatsArrived();
 
     #endregion
 
@@ -164,7 +165,7 @@ public class CatTray : MonoBehaviour
 
         if (IsFull)
         {
-            Debug.Log("[CatTray] Khay chờ đầy 5/5 - THUA");
+            Debug.Log("[CatTray] Khay chờ đầy 5/5");
             OnTrayFull?.Invoke();
         }
 
@@ -185,6 +186,18 @@ public class CatTray : MonoBehaviour
                 return;
             }
         }
+    }
+
+    // Mọi mèo đã giữ chỗ trong khay đều đã bay tới nơi (không còn con nào đang bay tới khay)
+    bool CheckAllCatsArrived()
+    {
+        for (int i = 0; i < MAIN_CELL_COUNT; i++)
+        {
+            if (trayCatIDs[i] != EMPTY && !isCatArrived[i])
+                return false;
+        }
+
+        return true;
     }
 
     /// <summary>

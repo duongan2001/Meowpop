@@ -160,10 +160,10 @@ RectTransform:
   - {fileID: 1919891430}
   m_Father: {fileID: 1695379418}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 152.51923}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 168.75, y: 0}
+  m_SizeDelta: {x: 257.5, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8076139
 MonoBehaviour:
@@ -453,7 +453,7 @@ GameObject:
   - component: {fileID: 16569286}
   - component: {fileID: 16569285}
   m_Layer: 5
-  m_Name: Button - Buy Catbed
+  m_Name: Button - Continue Play
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -523,7 +523,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 16569286}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 316048828}
+        m_TargetAssemblyTypeName: FullTrayPanel, Assembly-CSharp
+        m_MethodName: OnContinuePlayButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &16569286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -643,7 +655,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 26577181}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 251139469}
+        m_TargetAssemblyTypeName: BuyCoinPanel, Assembly-CSharp
+        m_MethodName: OnCloseButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &26577181
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -886,6 +910,11 @@ MonoBehaviour:
     title: Frozen Bubble
     description: 
     icon: {fileID: 21300000, guid: 62f3083ffd1e08f469e83cef6d1cff2b, type: 3}
+  - type: 1
+    unlockLevel: 9
+    title: Locked Bubble
+    description: 
+    icon: {fileID: 0}
   newChallengePanel: {fileID: 2069413134}
 --- !u!1 &52371092
 GameObject:
@@ -1460,7 +1489,7 @@ GameObject:
   - component: {fileID: 69422674}
   - component: {fileID: 69422673}
   m_Layer: 5
-  m_Name: Button - Claim Catbed Ad
+  m_Name: Button - Continue Play Ad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1530,7 +1559,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 69422674}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 316048828}
+        m_TargetAssemblyTypeName: FullTrayPanel, Assembly-CSharp
+        m_MethodName: OnContinuePlayAdButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &69422674
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1601,10 +1642,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1693399660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 120}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 429, y: -60}
+  m_SizeDelta: {x: 114, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &74750472
 MonoBehaviour:
@@ -2159,7 +2200,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &102725389
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2825,7 +2866,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 138085515}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1466305947}
+        m_TargetAssemblyTypeName: NewPowerUpPanel, Assembly-CSharp
+        m_MethodName: OnOKButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &138085515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3347,7 +3400,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Retry
+  m_Text: Claim
 --- !u!222 &187457692
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4127,6 +4180,85 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 436318, guid: 460ec3e3d006c254b831a1a92d30ed3e, type: 3}
   m_PrefabInstance: {fileID: 252976572}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &254855120
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 254855121}
+  - component: {fileID: 254855123}
+  - component: {fileID: 254855122}
+  m_Layer: 5
+  m_Name: Amount Text
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &254855121
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 254855120}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 322051524}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 40, y: 2.5}
+  m_SizeDelta: {x: -120, y: -25}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &254855122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 254855120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.3529412, g: 0.15294118, b: 0.1254902, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: ef7d38d2a3dd65c47a18eaeb759ed6f2, type: 3}
+    m_FontSize: 46
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 3
+    m_MaxSize: 48
+    m_Alignment: 4
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: 999999
+--- !u!222 &254855123
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 254855120}
+  m_CullTransparentMesh: 1
 --- !u!1 &258596755
 GameObject:
   m_ObjectHideFlags: 0
@@ -4805,6 +4937,7 @@ GameObject:
   - component: {fileID: 316048826}
   - component: {fileID: 316048825}
   - component: {fileID: 316048827}
+  - component: {fileID: 316048828}
   m_Layer: 5
   m_Name: Panel - Full Tray
   m_TagString: Untagged
@@ -4824,6 +4957,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 322051524}
   - {fileID: 1497035788}
   m_Father: {fileID: 1932844749}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -4882,6 +5016,44 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &316048828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 316048823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81ea1674de955734eb23da9338618729, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelCanvasGroup: {fileID: 316048827}
+  fadeDuration: 0.25
+  showDelayTime: 0.25
+  closeOtherPanelOnShow: 1
+  showInterstitialOnOpen: 0
+  interstitialCooldown: 0
+  coinIcon: {fileID: 939006697}
+  coinAmountText: {fileID: 254855122}
+  continuePrice: 1000
+  priceText: {fileID: 775264925}
+  buyCoinIcon: {fileID: 649658139}
+  catbedImage: {fileID: 408997885}
+  unlockCatbedText: {fileID: 2104586270}
+  unlockCatbedMessage: Clean tray and claim a catbed
+  cleanTrayOnlyMessage: Clean tray and continue
+  continuePlayButton: {fileID: 16569285}
+  continuePlayAdButton: {fileID: 69422673}
+  closeButton: {fileID: 506705063}
+  sparkleVfx: {fileID: 1740222635}
+  coinEffectPrefab: {fileID: 0}
+  coinEffectContainer: {fileID: 0}
+  coinEffectCount: 10
+  coinAppearDuration: 0.15
+  coinFlyDuration: 0.45
+  coinFlyStagger: 0.06
+  coinFlyEndScale: 0.8
 --- !u!1 &321638336
 GameObject:
   m_ObjectHideFlags: 0
@@ -4966,6 +5138,83 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &322051523
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 322051524}
+  - component: {fileID: 322051526}
+  - component: {fileID: 322051525}
+  m_Layer: 5
+  m_Name: Coin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &322051524
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322051523}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.00032, y: 1.00032, z: 1.00032}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 939006697}
+  - {fileID: 254855121}
+  m_Father: {fileID: 316048824}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 160, y: -60}
+  m_SizeDelta: {x: 280, y: 90}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &322051525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322051523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 597dfa5253f579d46896db377dc87c19, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &322051526
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322051523}
+  m_CullTransparentMesh: 1
 --- !u!1 &323752354
 GameObject:
   m_ObjectHideFlags: 0
@@ -5154,10 +5403,10 @@ RectTransform:
   - {fileID: 1238068828}
   m_Father: {fileID: 1695379418}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 152.51923}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 703.75, y: 0}
+  m_SizeDelta: {x: 257.5, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &347683247
 MonoBehaviour:
@@ -5872,30 +6121,31 @@ MonoBehaviour:
     freeAmountOnUnlock: 1
     coinPrice: 700
     buyAmount: 1
-    title: 
-    description: 
+    title: Magic Wand
+    description: Instantly fill a cat bed
     icon: {fileID: 21300000, guid: 0eca3b3f3a4a10f46b4013fe97c83f10, type: 3}
   - type: 1
     unlockLevel: 5
     freeAmountOnUnlock: 1
     coinPrice: 700
     buyAmount: 1
-    title: 
-    description: 
+    title: Clear Tray
+    description: Clear all cats from the tray
     icon: {fileID: 21300000, guid: 535bf4bcb07f9454b8abdd25aed3af47, type: 3}
   - type: 2
     unlockLevel: 7
     freeAmountOnUnlock: 1
     coinPrice: 700
     buyAmount: 1
-    title: 
-    description: 
+    title: Shuffle
+    description: Shuffle the cats around
     icon: {fileID: 21300000, guid: 4061981f744eaa64692b9df3a58c2e43, type: 3}
   powerUpButtons:
   - {fileID: 1733957069}
   - {fileID: 1937002634}
   - {fileID: 1287656730}
   buyPowerUpPanel: {fileID: 541504640}
+  newPowerUpPanel: {fileID: 1466305947}
   shuffleBubbleCount: 30
   shuffleCenter: {fileID: 0}
   shuffleSpinDegrees: 360
@@ -6377,10 +6627,10 @@ RectTransform:
   - {fileID: 388350339}
   m_Father: {fileID: 1693399660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 120}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 126, y: -60}
+  m_SizeDelta: {x: 252, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &460184269
 MonoBehaviour:
@@ -7549,7 +7799,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 506705064}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 316048828}
+        m_TargetAssemblyTypeName: FullTrayPanel, Assembly-CSharp
+        m_MethodName: OnCloseButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &506705064
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9737,7 +9999,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 659966499}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 541504640}
+        m_TargetAssemblyTypeName: BuyPowerUpPanel, Assembly-CSharp
+        m_MethodName: OnClaimButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &659966499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12529,6 +12803,81 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!1 &939006696
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 939006697}
+  - component: {fileID: 939006699}
+  - component: {fileID: 939006698}
+  m_Layer: 5
+  m_Name: Coin Icon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &939006697
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939006696}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 322051524}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 50, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &939006698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939006696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 297d96c3545aaeb4498a80b85b73e587, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &939006699
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939006696}
+  m_CullTransparentMesh: 1
 --- !u!1 &963700538
 GameObject:
   m_ObjectHideFlags: 0
@@ -13121,10 +13470,10 @@ RectTransform:
   - {fileID: 1613894423}
   m_Father: {fileID: 1695379418}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 152.51923}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 436.25, y: 0}
+  m_SizeDelta: {x: 257.5, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1015292448
 MonoBehaviour:
@@ -14106,7 +14455,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1043050130}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 251139469}
+        m_TargetAssemblyTypeName: BuyCoinPanel, Assembly-CSharp
+        m_MethodName: OnClaimCoinAdButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1043050130
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14912,10 +15273,14 @@ MonoBehaviour:
   bubbleSpawnInterval: 0.5
   uprightBubbleCount: 30
   maxActiveBubbles: 30
+  frozenNeighborDistance: 60
   victoryPanel: {fileID: 1157007468}
   losePanel: {fileID: 1178867442}
   buyCatbedPanel: {fileID: 1864046857}
   buyCoinPanel: {fileID: 251139469}
+  fullTrayPanel: {fileID: 0}
+  maxFullTrayContinues: 1
+  fullTrayContinueDelay: 0.25
 --- !u!1 &1143717389
 GameObject:
   m_ObjectHideFlags: 0
@@ -15131,7 +15496,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1157007464
 RectTransform:
   m_ObjectHideFlags: 0
@@ -16925,7 +17290,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1322146350}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1178867442}
+        m_TargetAssemblyTypeName: LosePanel, Assembly-CSharp
+        m_MethodName: OnRetryButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1322146350
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18696,6 +19073,7 @@ GameObject:
   - component: {fileID: 1466305945}
   - component: {fileID: 1466305944}
   - component: {fileID: 1466305946}
+  - component: {fileID: 1466305947}
   m_Layer: 5
   m_Name: Panel - New Power-up
   m_TagString: Untagged
@@ -18775,6 +19153,33 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!114 &1466305947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1466305942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dac36295fba9feb4fa8f233a0e0f97e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelCanvasGroup: {fileID: 1466305946}
+  fadeDuration: 0.25
+  showDelayTime: 0.25
+  closeOtherPanelOnShow: 1
+  showInterstitialOnOpen: 0
+  interstitialCooldown: 0
+  title: {fileID: 1042924254}
+  powerUpIcon: {fileID: 103160867}
+  powerUpDescriptionText: {fileID: 1960604432}
+  okButton: {fileID: 138085514}
+  scaleDuration: 0.3
+  iconIdleScaleAmount: 0.06
+  iconIdleDuration: 1.2
+  sparkleVfx: {fileID: 1661149985}
+  testType: 0
 --- !u!1 &1477298708
 GameObject:
   m_ObjectHideFlags: 0
@@ -19335,10 +19740,10 @@ RectTransform:
   - {fileID: 2144054587}
   m_Father: {fileID: 1695379418}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 152.51923}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 971.25, y: 0}
+  m_SizeDelta: {x: 257.5, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1508016004
 MonoBehaviour:
@@ -20283,7 +20688,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: -60}
+  m_SizeDelta: {x: 516, y: -60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1628219619
 MonoBehaviour:
@@ -20781,6 +21186,11 @@ PrefabInstance:
 --- !u!4 &1661149984 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 436318, guid: 460ec3e3d006c254b831a1a92d30ed3e, type: 3}
+  m_PrefabInstance: {fileID: 1661149983}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &1661149985 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19877946, guid: 460ec3e3d006c254b831a1a92d30ed3e, type: 3}
   m_PrefabInstance: {fileID: 1661149983}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1661780769
@@ -21636,7 +22046,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -60}
-  m_SizeDelta: {x: 0, y: 120}
+  m_SizeDelta: {x: 486, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1693399661
 MonoBehaviour:
@@ -22515,6 +22925,11 @@ PrefabInstance:
 --- !u!4 &1740222634 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 486650, guid: 0fb0846ec7b795e4586da62f99d560a5, type: 3}
+  m_PrefabInstance: {fileID: 1740222633}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &1740222635 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19835860, guid: 0fb0846ec7b795e4586da62f99d560a5, type: 3}
   m_PrefabInstance: {fileID: 1740222633}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1756194246
@@ -23760,7 +24175,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1848883795}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 541504640}
+        m_TargetAssemblyTypeName: BuyPowerUpPanel, Assembly-CSharp
+        m_MethodName: OnBuyWithCoinButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1848883795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24294,16 +24721,66 @@ MonoBehaviour:
   - level: 1
     totalCatCount: 9
     catTypeCount: 3
-    minCatInBubble: 1
-    maxCatInBubble: 5
+    minCatInBubble: 3
+    maxCatInBubble: 3
     frozenBubbleCount: 0
+    frozenBubbleOrders: 
     lockedBubbleCount: 0
   - level: 2
-    totalCatCount: 123
-    catTypeCount: 6
+    totalCatCount: 87
+    catTypeCount: 10
     minCatInBubble: 1
     maxCatInBubble: 5
     frozenBubbleCount: 0
+    frozenBubbleOrders: 
+    lockedBubbleCount: 0
+  - level: 3
+    totalCatCount: 96
+    catTypeCount: 10
+    minCatInBubble: 1
+    maxCatInBubble: 5
+    frozenBubbleCount: 0
+    frozenBubbleOrders: 
+    lockedBubbleCount: 0
+  - level: 4
+    totalCatCount: 123
+    catTypeCount: 12
+    minCatInBubble: 1
+    maxCatInBubble: 5
+    frozenBubbleCount: 0
+    frozenBubbleOrders: 
+    lockedBubbleCount: 0
+  - level: 5
+    totalCatCount: 117
+    catTypeCount: 12
+    minCatInBubble: 1
+    maxCatInBubble: 5
+    frozenBubbleCount: 3
+    frozenBubbleOrders: 010000000f0000001e000000
+    lockedBubbleCount: 0
+  - level: 6
+    totalCatCount: 126
+    catTypeCount: 12
+    minCatInBubble: 1
+    maxCatInBubble: 5
+    frozenBubbleCount: 4
+    frozenBubbleOrders: 010000000a000000190000001e000000
+    lockedBubbleCount: 0
+  - level: 7
+    totalCatCount: 102
+    catTypeCount: 12
+    minCatInBubble: 1
+    maxCatInBubble: 5
+    frozenBubbleCount: 2
+    frozenBubbleOrders: 0100000014000000
+    lockedBubbleCount: 0
+  - level: 8
+    totalCatCount: 132
+    catTypeCount: 14
+    minCatInBubble: 1
+    maxCatInBubble: 5
+    frozenBubbleCount: 3
+    frozenBubbleOrders: 0a000000140000001e000000
     lockedBubbleCount: 0
 --- !u!1 &1910299212
 GameObject:
@@ -25539,9 +26016,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 428794677}
-        m_TargetAssemblyTypeName: PowerUpManager, Assembly-CSharp
-        m_MethodName: TestClearTray
+      - m_Target: {fileID: 1937002634}
+        m_TargetAssemblyTypeName: PowerUpButton, Assembly-CSharp
+        m_MethodName: OnPowerUpButtonClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -26602,7 +27079,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2074209023}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 541504640}
+        m_TargetAssemblyTypeName: BuyPowerUpPanel, Assembly-CSharp
+        m_MethodName: OnCloseButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2074209023
 MonoBehaviour:
   m_ObjectHideFlags: 0

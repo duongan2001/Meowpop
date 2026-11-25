@@ -139,6 +139,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -526,7 +527,15 @@ MonoBehaviour:
   - 0.75
   catBubbleImage: {fileID: 5566036371574119224}
   bubbleCollider: {fileID: 4679732517512433748}
+  appearDuration: 0.25
   popDuration: 0.2
+  popVfxPrefab: {fileID: 198012786351023796, guid: 46e56f62e4ff899488d1b27766d1eb6d, type: 3}
+  frozenBubbleImage: {fileID: 6055123808832926419}
+  frozenBreakCountText: {fileID: 6571795561996433352}
+  frozenBreakCount: 3
+  iceBreakVfxPrefab: {fileID: 19871332, guid: 932046b7eaf3b554f8d74c81e2f00558, type: 3}
+  frozenFadeDuration: 0.3
+  frozenShakeStrength: 12
 --- !u!1 &2979475268808936687
 GameObject:
   m_ObjectHideFlags: 0
@@ -666,6 +675,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -924,6 +934,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -1087,6 +1098,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -1286,6 +1298,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -1449,6 +1462,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -1612,6 +1626,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -1775,6 +1790,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -1938,6 +1954,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -2101,6 +2118,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -2304,6 +2322,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -2467,6 +2486,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -2630,6 +2650,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -2793,6 +2814,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4
@@ -2956,6 +2978,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   minWinkDelay: 6
   maxWinkDelay: 10
+  uprightRotateSpeed: 720
   flyDuration: 0.45
   flyEndScale: 0.6
   flyEase: 4

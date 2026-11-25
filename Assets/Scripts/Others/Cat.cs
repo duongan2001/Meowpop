@@ -52,6 +52,7 @@ public class Cat : MonoBehaviour
 
     public int CatID => catID;
     public bool IsFlying => isFlying;
+    public CatBubble Bubble => catBubble;
     public Image Image => image;
 
     #endregion

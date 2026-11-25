@@ -19,6 +19,7 @@ public class LevelManager : MonoBehaviour
     int[] catCountEachType;                              // số mèo của từng loại (cùng index với levelCatIDs)
     List<int> allCats = new List<int>();               // toàn bộ mèo của level (đã trộn)
     List<int[]> bubbleCatIDs = new List<int[]>();      // mèo trong từng bóng
+    readonly HashSet<int> frozenBubbleIndexes = new HashSet<int>();   // index các bóng bị đóng băng
 
     #endregion
 
@@ -29,6 +30,8 @@ public class LevelManager : MonoBehaviour
     public IReadOnlyList<int> LevelCatIDs => levelCatIDs;
     public IReadOnlyList<int> CatCountEachType => catCountEachType;
     public IReadOnlyList<int[]> BubbleCatIDs => bubbleCatIDs;
+
+    public bool IsBubbleFrozen(int bubbleIndex) => frozenBubbleIndexes.Contains(bubbleIndex);
 
     #endregion
 
@@ -170,16 +173,29 @@ public class LevelManager : MonoBehaviour
 
     /// <summary>
     /// Chia mèo vào các bóng, mỗi bóng có từ minCatInBubble đến maxCatInBubble con.
+    /// Bóng đóng băng (luôn 5 mèo) được lấy trước, sau đó chèn vào vị trí ngẫu nhiên.
     /// </summary>
     void SplitCatsIntoBubbles()
     {
         bubbleCatIDs.Clear();
+        frozenBubbleIndexes.Clear();
 
+        // 1. Lấy trước mèo cho các bóng đóng băng
+        int frozenTotal = currentLevel.FrozenBubbleTotal;
+        List<int[]> frozenBubbles = new List<int[]>(frozenTotal);
+        int startIndex = 0;
+
+        for (int i = 0; i < frozenTotal; i++)
+        {
+            frozenBubbles.Add(allCats.GetRange(startIndex, LevelData.FROZEN_BUBBLE_CAT_COUNT).ToArray());
+            startIndex += LevelData.FROZEN_BUBBLE_CAT_COUNT;
+        }
+
+        // 2. Chia phần còn lại thành bóng thường
         // Min phải >= 1, nếu không size = 0 sẽ lặp vô hạn
         int min = Mathf.Max(1, currentLevel.minCatInBubble);
         int max = Mathf.Max(min, currentLevel.maxCatInBubble);
-        int remaining = allCats.Count;
-        int startIndex = 0;
+        int remaining = allCats.Count - startIndex;
         List<int> validSizes = new List<int>(max);
 
         while (remaining > 0)
@@ -201,6 +217,45 @@ public class LevelManager : MonoBehaviour
 
             startIndex += size;
             remaining -= size;
+        }
+
+        // 3. Chèn bóng đóng băng vào thứ tự sinh: theo frozenBubbleOrders nếu có, không thì ngẫu nhiên
+        if (currentLevel.HasCustomFrozenOrders)
+            InsertFrozenBubblesByOrder(frozenBubbles);
+        else
+        {
+            foreach (int[] frozenBubble in frozenBubbles)
+                bubbleCatIDs.Insert(Random.Range(0, bubbleCatIDs.Count + 1), frozenBubble);
+        }
+
+        for (int i = 0; i < bubbleCatIDs.Count; i++)
+        {
+            if (frozenBubbles.Contains(bubbleCatIDs[i]))
+                frozenBubbleIndexes.Add(i);
+        }
+    }
+
+    /// <summary>
+    /// Đặt bóng đóng băng đúng thứ tự sinh đã điền (bắt đầu từ 1).
+    /// Chèn theo thứ tự tăng dần để vị trí của bóng chèn trước không bị lệch.
+    /// Thứ tự vượt quá tổng số bóng thì đặt cuối cùng.
+    /// </summary>
+    void InsertFrozenBubblesByOrder(List<int[]> frozenBubbles)
+    {
+        List<int> orders = new List<int>(currentLevel.frozenBubbleOrders);
+        orders.Sort();
+
+        for (int i = 0; i < orders.Count; i++)
+        {
+            int index = orders[i] - 1;
+
+            if (index > bubbleCatIDs.Count)
+            {
+                Debug.LogWarning($"[LevelManager] Level {currentLevel.level}: bóng đóng băng thứ tự {orders[i]} vượt quá số bóng ({bubbleCatIDs.Count + 1}), đặt ở cuối");
+                index = bubbleCatIDs.Count;
+            }
+
+            bubbleCatIDs.Insert(index, frozenBubbles[i]);
         }
     }
 

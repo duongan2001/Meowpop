@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
@@ -21,6 +22,9 @@ public class PowerUpManager : MonoBehaviour
     [Tooltip("Panel - Buy Power-up, mở khi bấm nút đã hết lượt")]
     [SerializeField] BuyPowerUpPanel buyPowerUpPanel;
 
+    [Tooltip("Panel - New Power-up, giới thiệu power-up vừa mở khóa. Để trống thì tặng lượt free luôn")]
+    [SerializeField] NewPowerUpPanel newPowerUpPanel;
+
     [Header("--- SHUFFLE ---")]
     [Tooltip("Số bóng đầu (đang hiển thị) được trộn mèo")]
     [SerializeField] int shuffleBubbleCount = 30;
@@ -40,6 +44,11 @@ public class PowerUpManager : MonoBehaviour
     PowerUpType pendingBuyType;
 
     readonly List<Transform> shufflingCats = new List<Transform>();
+
+    // Power-up vừa mở khóa đang chờ hiện panel giới thiệu
+    readonly Queue<PowerUpType> pendingIntros = new Queue<PowerUpType>();
+    bool isShowingIntro;
+    Coroutine introCoroutine;
 
     #endregion
 
@@ -86,17 +95,92 @@ public class PowerUpManager : MonoBehaviour
         if (powerUps == null)
             return;
 
-        foreach (PowerUpData powerUp in powerUps)
+        StopIntroCoroutine();
+        pendingIntros.Clear();
+        isShowingIntro = false;
+
+        // Mở khóa thấp trước thì giới thiệu trước
+        List<PowerUpData> sortedPowerUps = new List<PowerUpData>(powerUps);
+        sortedPowerUps.Sort((a, b) => a.unlockLevel.CompareTo(b.unlockLevel));
+
+        foreach (PowerUpData powerUp in sortedPowerUps)
         {
             if (level < powerUp.unlockLevel || IsFreeGranted(powerUp.type))
                 continue;
 
-            MarkFreeGranted(powerUp.type);
+            // Không có panel thì tặng luôn như cũ
+            if (newPowerUpPanel == null)
+            {
+                GrantUnlockReward(powerUp.type);
+                continue;
+            }
 
-            if (powerUp.freeAmountOnUnlock > 0)
-                AddPowerUp(powerUp.type, powerUp.freeAmountOnUnlock, true);
+            // Chỉ đánh dấu đã tặng khi bấm OK -> thoát game giữa chừng thì lần sau vẫn hiện lại
+            pendingIntros.Enqueue(powerUp.type);
+        }
 
-            // TODO: mở Panel - New Power-up giới thiệu power-up vừa mở
+        if (pendingIntros.Count > 0)
+            introCoroutine = StartCoroutine(ShowNextIntroRoutine());
+    }
+
+    /// <summary>
+    /// Panel - New Power-up gọi khi bấm OK: tặng lượt free (icon rơi vào nút), hiện tiếp power-up kế (nếu có).
+    /// </summary>
+    public void OnNewPowerUpClosed(PowerUpType type)
+    {
+        isShowingIntro = false;
+        GrantUnlockReward(type);
+
+        if (pendingIntros.Count > 0)
+        {
+            StopIntroCoroutine();
+            introCoroutine = StartCoroutine(ShowNextIntroRoutine());
+        }
+    }
+
+    /// <summary>
+    /// Panel bị panel khác đè tắt trước khi bấm OK: bỏ lượt giới thiệu này, lần load level sau hiện lại.
+    /// </summary>
+    public void OnNewPowerUpInterrupted()
+    {
+        isShowingIntro = false;
+        pendingIntros.Clear();
+        StopIntroCoroutine();
+    }
+
+    IEnumerator ShowNextIntroRoutine()
+    {
+        // Chờ popup thử thách mới (hiện cùng lúc vào level) đóng xong rồi mới hiện, tránh 2 panel đè nhau
+        while (ChallengeManager.Instance != null && ChallengeManager.Instance.HasPendingIntro)
+            yield return null;
+
+        introCoroutine = null;
+
+        if (isShowingIntro || pendingIntros.Count == 0)
+            yield break;
+
+        isShowingIntro = true;
+        newPowerUpPanel.ShowNewPowerUp(pendingIntros.Dequeue());
+    }
+
+    void GrantUnlockReward(PowerUpType type)
+    {
+        if (IsFreeGranted(type))
+            return;
+
+        MarkFreeGranted(type);
+
+        PowerUpData data = GetPowerUpData(type);
+        if (data != null && data.freeAmountOnUnlock > 0)
+            AddPowerUp(type, data.freeAmountOnUnlock, true);
+    }
+
+    void StopIntroCoroutine()
+    {
+        if (introCoroutine != null)
+        {
+            StopCoroutine(introCoroutine);
+            introCoroutine = null;
         }
     }
 

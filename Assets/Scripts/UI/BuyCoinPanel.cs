@@ -66,6 +66,7 @@ public class BuyCoinPanel : PanelBaseUIController
     public static event Action<int> OnCoinClaimed;
 
     bool isClaiming;            // đang chạy hiệu ứng xu bay
+    Action onClosed;            // gọi khi bấm Close (VD quay lại panel trước)
     int displayedCoin;
 
     Coroutine coinEffectCoroutine;
@@ -121,8 +122,9 @@ public class BuyCoinPanel : PanelBaseUIController
     /// <summary>
     /// Mở panel: load số xu, số lần nhận hôm nay rồi hiện panel.
     /// </summary>
-    public void ShowBuyCoin()
+    public void ShowBuyCoin(Action onClosed = null)
     {
+        this.onClosed = onClosed;
         isClaiming = false;
         RefreshUI();
         ShowDelay();
@@ -167,6 +169,14 @@ public class BuyCoinPanel : PanelBaseUIController
             return;
 
         Hide();
+        InvokeOnClosed();
+    }
+
+    void InvokeOnClosed()
+    {
+        Action callback = onClosed;
+        onClosed = null;
+        callback?.Invoke();
     }
 
     /// <summary>
@@ -196,6 +206,7 @@ public class BuyCoinPanel : PanelBaseUIController
             if (hideAfterClaim)
             {
                 Hide();
+                InvokeOnClosed();
                 return;
             }
 

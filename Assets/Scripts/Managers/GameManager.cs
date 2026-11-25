@@ -32,14 +32,25 @@ public class GameManager : MonoBehaviour
     [SerializeField] int uprightBubbleCount = 20;
     [Tooltip("Số bóng (còn mèo) hiện trên màn hình tối đa. Vỡ 1 bóng thì bật thêm bóng tiếp theo")]
     [SerializeField] int maxActiveBubbles = 30;
+    [Tooltip("Bóng đóng băng: khoảng hở tối đa giữa 2 viền bóng để tính là \"bên cạnh\" (bấm mèo ở bóng bên cạnh thì phá băng)")]
+    [SerializeField] float frozenNeighborDistance = 60f;
 
     [Header("Panels")]
     [SerializeField] VictoryPanel victoryPanel;
     [SerializeField] LosePanel losePanel;
     [SerializeField] BuyCatbedPanel buyCatbedPanel;
     [SerializeField] BuyCoinPanel buyCoinPanel;
+    [SerializeField] FullTrayPanel fullTrayPanel;
+
+    [Header("Full Tray")]
+    [Tooltip("Số lần được cứu bằng Panel - Full Tray mỗi level, hết lượt thì khay đầy là thua luôn. < 0 = không giới hạn")]
+    [SerializeField] int maxFullTrayContinues = 1;
+    [Tooltip("Chờ panel mờ đi rồi mới dọn khay + mở ổ (giây)")]
+    [SerializeField] float fullTrayContinueDelay = 0.25f;
 
     Coroutine spawnCoroutine;
+    Coroutine fullTrayCoroutine;
+    int fullTrayContinueCount;  // số lần đã cứu bằng Panel - Full Tray trong level này
     bool isGameOver;            // dừng chơi (thắng hoặc thua)
     int collectedCatCount;      // số mèo đã thu thập, cộng mỗi khi 1 ổ hoàn thành
     int playingLevelNumber;     // level đang chơi (OnLevelWin lưu trước level tiếp theo nên không lấy từ LevelManager được)
@@ -107,8 +118,11 @@ public class GameManager : MonoBehaviour
         if (LevelManager.Instance.CurrentLevel == null)
             return;
 
+        StopFullTrayCoroutine();
+
         isGameOver = false;
         collectedCatCount = 0;
+        fullTrayContinueCount = 0;
         UpdateCollectedCountUI();
 
         if (catTray != null)
@@ -229,7 +243,19 @@ public class GameManager : MonoBehaviour
         if (PowerUpManager.Instance != null && PowerUpManager.Instance.IsBusy)
             return;
 
+        // Bóng đang đóng băng thì không bấm được, lớp băng rung nhẹ
+        CatBubble sourceBubble = cat.Bubble;
+        if (sourceBubble != null && sourceBubble.IsFrozen)
+        {
+            sourceBubble.PlayFrozenShake();
+            return;
+        }
+
         SendCatToTarget(cat);
+
+        // Mèo đã rời bóng (không bị kẹt vì khay đầy) thì trừ băng các bóng bên cạnh
+        if (cat.IsFlying && sourceBubble != null)
+            UnfreezeNeighborBubbles(sourceBubble);
 
         // Bấm mèo có thể làm bóng vỡ -> bóng sau lọt vào nhóm bóng đầu, mèo của nó xoay thẳng
         RefreshUprightCats(true);
@@ -319,19 +345,110 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void OpenBuyCoinPanel()
     {
+        OpenBuyCoinPanel(null);
+    }
+
+    /// <summary>
+    /// Mở panel nhận xu, onClosed gọi khi bấm Close ở Buy Coin (VD quay lại Panel - Full Tray).
+    /// </summary>
+    public void OpenBuyCoinPanel(System.Action onClosed)
+    {
         if (buyCoinPanel == null)
             return;
 
-        buyCoinPanel.ShowBuyCoin();
+        buyCoinPanel.ShowBuyCoin(onClosed);
     }
 
+    /// <summary>
+    /// Khay đầy: dừng chơi, còn lượt cứu thì chờ mèo cuối bay tới khay rồi hiện Panel - Full Tray, hết lượt thì thua.
+    /// </summary>
     void OnTrayFull()
+    {
+        if (isGameOver)
+            return;
+
+        isGameOver = true;
+
+        bool canContinue = fullTrayPanel != null
+            && (maxFullTrayContinues < 0 || fullTrayContinueCount < maxFullTrayContinues);
+
+        if (!canContinue)
+        {
+            ShowLosePanel();
+            return;
+        }
+
+        StopFullTrayCoroutine();
+        fullTrayCoroutine = StartCoroutine(ShowFullTrayRoutine());
+    }
+
+    IEnumerator ShowFullTrayRoutine()
+    {
+        // Chờ mèo cuối bay tới khay (để lúc dọn khay hút được hết)
+        while (catTray != null && !catTray.AreAllCatsArrived)
+            yield return null;
+
+        fullTrayCoroutine = null;
+        fullTrayPanel.ShowFullTray();
+    }
+
+    /// <summary>
+    /// Panel - Full Tray gọi khi người chơi chọn chơi tiếp: dọn khay vào ô 6 + mở 1 ổ khóa (nếu còn).
+    /// </summary>
+    public void ContinueAfterFullTray()
+    {
+        fullTrayContinueCount++;
+
+        StopFullTrayCoroutine();
+        fullTrayCoroutine = StartCoroutine(ContinueAfterFullTrayRoutine());
+    }
+
+    IEnumerator ContinueAfterFullTrayRoutine()
+    {
+        // Chờ panel mờ đi cho thấy rõ hiệu ứng
+        if (fullTrayContinueDelay > 0f)
+            yield return new WaitForSecondsRealtime(fullTrayContinueDelay);
+
+        if (catTray != null)
+            catTray.UseVacuumPowerup();
+
+        CatBed lockedBed = GetFirstLockedBed();
+        if (lockedBed != null)
+            lockedBed.UnlockBedWithAnimation();
+
+        fullTrayCoroutine = null;
+        isGameOver = false;
+    }
+
+    /// <summary>
+    /// Ổ khóa đầu tiên (theo thứ tự catBeds), null nếu đã mở hết.
+    /// </summary>
+    public CatBed GetFirstLockedBed()
+    {
+        foreach (CatBed bed in catBeds)
+        {
+            if (bed != null && !bed.IsUnlocked)
+                return bed;
+        }
+
+        return null;
+    }
+
+    public void ShowLosePanel()
     {
         isGameOver = true;
 
-        // TODO: sau này có thể mở Panel - Full Tray trước (cứu bằng power-up / quảng cáo), từ chối mới thua
         if (losePanel != null)
             losePanel.ShowLose();
+    }
+
+    void StopFullTrayCoroutine()
+    {
+        if (fullTrayCoroutine != null)
+        {
+            StopCoroutine(fullTrayCoroutine);
+            fullTrayCoroutine = null;
+        }
     }
 
     #endregion
@@ -368,6 +485,7 @@ public class GameManager : MonoBehaviour
         {
             CatBubble bubble = GetBubble(i);
             bubble.SetUpCatBubble(bubbleCatIDs[i]);
+            bubble.SetFrozen(LevelManager.Instance.IsBubbleFrozen(i));
 
             // Ẩn đi, chờ tới lượt mới hiện
             bubble.gameObject.SetActive(false);
@@ -434,12 +552,14 @@ public class GameManager : MonoBehaviour
             hasNewBubble = true;
         }
 
-        if (!hasNewBubble)
-            return;
+        if (hasNewBubble)
+        {
+            // Bóng mới lọt vào nhóm bóng đầu thì mèo của nó xoay thẳng
+            RefreshUprightCats(true);
+            StartShowBubbles();
+        }
 
-        // Bóng mới lọt vào nhóm bóng đầu thì mèo của nó xoay thẳng
-        RefreshUprightCats(true);
-        StartShowBubbles();
+        UnfreezeIfOnlyFrozenLeft();
     }
 
     /// <summary>
@@ -612,6 +732,72 @@ public class GameManager : MonoBehaviour
     #endregion
 
 
+    #region FROZEN BUBBLE METHODS
+
+    /// <summary>
+    /// Mọi bóng đóng băng nằm cạnh bóng vừa được bấm mèo bị trừ 1 lần, hết lần thì vỡ băng.
+    /// </summary>
+    void UnfreezeNeighborBubbles(CatBubble sourceBubble)
+    {
+        for (int i = 0; i < shownBubbleCount; i++)
+        {
+            CatBubble bubble = spawnedBubbles[i];
+
+            if (bubble == sourceBubble || !bubble.IsFrozen || bubble.RemainingCat <= 0)
+                continue;
+
+            if (IsNeighborBubble(sourceBubble, bubble))
+                bubble.HitFrozen();
+        }
+    }
+
+    /// <summary>
+    /// 2 bóng "bên cạnh" nhau: khoảng hở giữa 2 viền bóng không quá frozenNeighborDistance.
+    /// </summary>
+    bool IsNeighborBubble(CatBubble a, CatBubble b)
+    {
+        float distance = Vector2.Distance(a.transform.localPosition, b.transform.localPosition);
+        float gap = distance - GetBubbleRadius(a) - GetBubbleRadius(b);
+
+        return gap <= frozenNeighborDistance;
+    }
+
+    /// <summary>
+    /// Chống kẹt: đã đặt hết bóng mà bóng còn mèo đều đóng băng (không còn bóng nào để bấm phá băng)
+    /// thì phá băng tất cả.
+    /// </summary>
+    void UnfreezeIfOnlyFrozenLeft()
+    {
+        if (placedBubbleCount < levelBubbleCount)
+            return;
+
+        bool hasFrozenBubble = false;
+
+        for (int i = 0; i < placedBubbleCount; i++)
+        {
+            CatBubble bubble = spawnedBubbles[i];
+            if (bubble.RemainingCat <= 0)
+                continue;
+
+            if (!bubble.IsFrozen)
+                return;
+
+            hasFrozenBubble = true;
+        }
+
+        if (!hasFrozenBubble)
+            return;
+
+        for (int i = 0; i < placedBubbleCount; i++)
+        {
+            if (spawnedBubbles[i].RemainingCat > 0)
+                spawnedBubbles[i].Unfreeze();
+        }
+    }
+
+    #endregion
+
+
     #region CAT QUERY METHODS
 
     /// <summary>
@@ -630,8 +816,8 @@ public class GameManager : MonoBehaviour
         {
             CatBubble bubble = spawnedBubbles[i];
 
-            // Bóng đã vỡ hoặc chưa hiện lên màn hình thì bỏ qua
-            if (bubble.RemainingCat <= 0 || bubble.Cats == null || !bubble.gameObject.activeInHierarchy)
+            // Bóng đã vỡ, chưa hiện lên màn hình hoặc đang đóng băng thì bỏ qua
+            if (bubble.RemainingCat <= 0 || bubble.Cats == null || !bubble.gameObject.activeInHierarchy || bubble.IsFrozen)
                 continue;
 
             checkedBubbles++;
@@ -719,8 +905,8 @@ public class GameManager : MonoBehaviour
         {
             CatBubble bubble = spawnedBubbles[i];
 
-            // Bóng đã vỡ thì bỏ qua, không tính vào 20 bóng
-            if (bubble.RemainingCat <= 0 || bubble.Cats == null)
+            // Bóng đã vỡ / đang đóng băng (chưa lấy được mèo) thì bỏ qua, không tính vào 20 bóng
+            if (bubble.RemainingCat <= 0 || bubble.Cats == null || bubble.IsFrozen)
                 continue;
 
             checkedBubbles++;
