@@ -73,7 +73,7 @@ public class BuyPowerUpPanel : PanelBaseUIController
         hasPowerUp = true;
 
         if (powerUpNameText != null)
-            powerUpNameText.text = data.title;
+            powerUpNameText.text = MultiLanguageManager.Translate($"powerup.{type}.title", data.title);
 
         // Không có icon thì giữ ảnh mặc định đang đặt sẵn trong panel
         if (powerUpIcon != null && data.icon != null)
@@ -83,7 +83,7 @@ public class BuyPowerUpPanel : PanelBaseUIController
             amountText.text = $"+{data.buyAmount}";
 
         if (powerUpDescriptionText != null)
-            powerUpDescriptionText.text = data.description;
+            powerUpDescriptionText.text = MultiLanguageManager.Translate($"powerup.{type}.description", data.description);
 
         if (priceText != null)
             priceText.text = data.coinPrice.ToString();

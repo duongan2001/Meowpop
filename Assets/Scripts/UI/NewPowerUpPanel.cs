@@ -95,7 +95,7 @@ public class NewPowerUpPanel : PanelBaseUIController
         isWaitingClaim = true;
 
         if (powerUpDescriptionText != null)
-            powerUpDescriptionText.text = data.description;
+            powerUpDescriptionText.text = MultiLanguageManager.Translate($"powerup.{type}.description", data.description);
 
         // Không có icon thì giữ ảnh mặc định đang đặt sẵn trong panel
         if (powerUpIcon != null && data.icon != null)

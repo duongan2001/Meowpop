@@ -128,7 +128,9 @@ public class FullTrayPanel : PanelBaseUIController
             catbedImage.SetActive(hasLockedBed);
 
         if (unlockCatbedText != null)
-            unlockCatbedText.text = hasLockedBed ? unlockCatbedMessage : cleanTrayOnlyMessage;
+            unlockCatbedText.text = hasLockedBed
+                ? MultiLanguageManager.Translate("fulltray.unlock_catbed", unlockCatbedMessage)
+                : MultiLanguageManager.Translate("fulltray.clean_tray", cleanTrayOnlyMessage);
 
         SetButtonsInteractable(true);
         ShowDelay();

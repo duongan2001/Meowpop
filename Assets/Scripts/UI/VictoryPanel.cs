@@ -209,7 +209,7 @@ public class VictoryPanel : PanelBaseUIController
             SetRewardText(currentReward);
 
         if (nextLevelText != null)
-            nextLevelText.text = $"Level {wonLevel + 1}";
+            nextLevelText.text = MultiLanguageManager.TranslateFormat("common.level", "Level {0}", wonLevel + 1);
 
         bool hasNextMechanic = SetupMechanicProgress(out float targetFill);
 

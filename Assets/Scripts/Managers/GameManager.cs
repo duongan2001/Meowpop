@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -34,6 +35,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] int maxActiveBubbles = 30;
     [Tooltip("Bóng đóng băng: khoảng hở tối đa giữa 2 viền bóng để tính là \"bên cạnh\" (bấm mèo ở bóng bên cạnh thì phá băng)")]
     [SerializeField] float frozenNeighborDistance = 60f;
+
+    [Header("UI")]
+    [Tooltip("Text hiện level đang chơi ở trên cùng màn hình (VD: Level 5)")]
+    [SerializeField] Text levelText;
 
     [Header("Panels")]
     [SerializeField] VictoryPanel victoryPanel;
@@ -90,12 +95,17 @@ public class GameManager : MonoBehaviour
     {
         if (catTray != null)
             catTray.OnTrayFull += OnTrayFull;
+
+        // Đổi ngôn ngữ thì cập nhật chữ "Level"
+        MultiLanguageManager.OnLanguageChanged += UpdateLevelText;
     }
 
     private void OnDisable()
     {
         if (catTray != null)
             catTray.OnTrayFull -= OnTrayFull;
+
+        MultiLanguageManager.OnLanguageChanged -= UpdateLevelText;
     }
 
     private void Start()
@@ -113,6 +123,7 @@ public class GameManager : MonoBehaviour
     public void LoadLevel()
     {
         playingLevelNumber = LevelManager.Instance.GetCurrentLevel();
+        UpdateLevelText();
         LevelManager.Instance.LoadLevelData();
 
         if (LevelManager.Instance.CurrentLevel == null)
@@ -155,6 +166,12 @@ public class GameManager : MonoBehaviour
 
         if (collectedCatCount >= LevelManager.Instance.CurrentLevel.totalCatCount)
             OnLevelWin();
+    }
+
+    void UpdateLevelText()
+    {
+        if (levelText != null)
+            levelText.text = MultiLanguageManager.TranslateFormat("common.level", "Level {0}", playingLevelNumber);
     }
 
     void UpdateCollectedCountUI()

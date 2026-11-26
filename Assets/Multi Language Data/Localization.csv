@@ -1,0 +1,57 @@
+key,en,vi,id,th,ko,ja,zh,fr,pt,es,ru
+,,,,,,,,,,,
+# COMMON,,,,,,,,,,,
+common.claim,Claim,Nhận,Klaim,รับ,받기,受け取る,领取,Récupérer,Resgatar,Reclamar,Забрать
+common.free,Free,Miễn phí,Gratis,ฟรี,무료,無料,免费,Gratuit,Grátis,Gratis,Бесплатно
+common.continue,Continue,Tiếp tục,Lanjutkan,ดำเนินการต่อ,계속,続ける,继续,Continuer,Continuar,Continuar,Продолжить
+common.ok,OK,OK,OK,ตกลง,확인,OK,确定,OK,OK,OK,ОК
+common.retry,Retry,Chơi lại,Coba Lagi,ลองอีกครั้ง,다시 하기,リトライ,重试,Réessayer,Tentar de novo,Reintentar,Повторить
+common.level,Level {0},Màn {0},Level {0},ด่าน {0},레벨 {0},レベル {0},第{0}关,Niveau {0},Nível {0},Nivel {0},Уровень {0}
+,,,,,,,,,,,
+# VICTORY,,,,,,,,,,,
+victory.rewardText,Reward,Phần thưởng,Hadiah,รางวัล,보상,褒美,报酬,Récompense,Recompensa,Premio,Награда
+victory.x2RewardText,X2 Reward,Phần thưởng X2,Hadiah X2,รางวัล X2,X2 보상,報酬2倍,双倍奖励,Récompense x2,Recompensa X2,Recompensa x2,Награда X2
+,,,,,,,,,,,
+# LOSE,,,,,,,,,,,
+lose.title,You Lose,Thua rồi,Kamu Kalah,คุณแพ้,패배,ゲームオーバー,你输了,Perdu,Você perdeu,Perdiste,Поражение
+,,,,,,,,,,,
+# FULL TRAY,,,,,,,,,,,
+fulltray.title,Tray is full,Khay đã đầy,Nampan penuh,ถาดเต็มแล้ว,트레이가 가득 찼어요,トレイがいっぱい,托盘已满,Plateau plein,Bandeja cheia,Bandeja llena,Лоток заполнен
+fulltray.unlock_catbed,Clean tray and claim a catbed,Dọn khay và nhận thêm 1 ổ mèo,Bersihkan nampan dan dapatkan 1 kasur kucing,เคลียร์ถาดและรับที่นอนแมว 1 ที่,트레이를 비우고 고양이 침대 받기,トレイを片付けて猫ベッドをゲット,清空托盘并领取一个猫窝,Vide le plateau et obtiens un panier,Limpe a bandeja e ganhe uma caminha,Vacía la bandeja y obtén una camita,Очисти лоток и получи лежанку
+fulltray.clean_tray,Clean tray and continue,Dọn khay và chơi tiếp,Bersihkan nampan dan lanjutkan,เคลียร์ถาดแล้วเล่นต่อ,트레이를 비우고 계속하기,トレイを片付けて続ける,清空托盘并继续,Vide le plateau et continue,Limpe a bandeja e continue,Vacía la bandeja y continúa,Очисти лоток и продолжай
+,,,,,,,,,,,
+# BUY COIN,,,,,,,,,,,
+buycoin.title,More Coin,Thêm xu,Koin Tambahan,รับเหรียญเพิ่ม,코인 더 받기,コインを追加,更多金币,Plus de pièces,Mais moedas,Más monedas,Больше монет
+buycoin.daily_limit,Daily limit,Giới hạn ngày,Batas harian,จำกัดต่อวัน,일일 한도,1日の上限,每日上限,Limite du jour,Limite diário,Límite diario,Лимит в день
+,,,,,,,,,,,
+# BUY CATBED,,,,,,,,,,,
+buycatbed.title,New Cat Bed,Ổ mèo mới,Kasur Kucing Baru,ที่นอนแมวใหม่,새 고양이 침대,新しい猫ベッド,新猫窝,Nouveau panier,Nova caminha,Nueva camita,Новая лежанка
+buycatbed.description,Unlock one more cat bed,Mở thêm 1 ổ mèo,Buka 1 kasur kucing lagi,ปลดล็อกที่นอนแมวเพิ่ม 1 ที่,고양이 침대 1개 더 열기,猫ベッドをもう1つ解放,再解锁一个猫窝,Débloque un panier de plus,Desbloqueie mais uma caminha,Desbloquea una camita más,Открой ещё одну лежанку
+,,,,,,,,,,,
+# NEW POWERUP,,,,,,,,,,,
+newpowerup.title,New Power Up,Vật phẩm mới,Power Up Baru,พาวเวอร์อัพใหม่,새 파워업,新アイテム,新道具,Nouveau bonus,Novo poder,Nuevo potenciador,Новый бонус
+,,,,,,,,,,,
+# NEW CHALLENGE,,,,,,,,,,,
+newchallenge.title,New Challenge,Thử thách mới,Tantangan Baru,ความท้าทายใหม่,새로운 도전,新しいチャレンジ,新挑战,Nouveau défi,Novo desafio,Nuevo desafío,Новое испытание
+,,,,,,,,,,,
+# POWER-UPS (key = powerup.<PowerUpType>.title / .description),,,,,,,,,,,
+powerup.FillBed.title,Magic Wand,Đũa Thần,Tongkat Ajaib,ไม้กายสิทธิ์,마법 지팡이,魔法のステッキ,魔法棒,Baguette magique,Varinha mágica,Varita mágica,Волшебная палочка
+powerup.FillBed.description,Instantly fill a cat bed,Lấp đầy ngay 1 ổ,Langsung isi 1 kasur kucing,เติมที่นอนแมวให้เต็มทันที,고양이 침대 하나를 바로 채워요,猫ベッドを1つすぐに満たす,立即填满一个猫窝,Remplit un panier instantanément,Enche uma caminha na hora,Llena una camita al instante,Мгновенно заполняет лежанку
+powerup.ClearTray.title,Clear Tray,Dọn Khay,Kosongkan Nampan,เคลียร์ถาด,트레이 비우기,トレイ整理,清空托盘,Vider le plateau,Limpar bandeja,Vaciar bandeja,Очистка лотка
+powerup.ClearTray.description,Clear all cats from the tray,Dọn sạch mèo trong khay,Kosongkan semua kucing dari nampan,นำแมวทั้งหมดออกจากถาด,트레이의 고양이를 모두 비워요,トレイの猫をすべて片付ける,清空托盘上的所有猫咪,Retire tous les chats du plateau,Tira todos os gatos da bandeja,Quita todos los gatos de la bandeja,Убирает всех котиков с лотка
+powerup.ShuffleCats.title,Shuffle,Xáo Trộn,Acak,สับเปลี่ยน,섞기,シャッフル,洗牌,Mélanger,Embaralhar,Mezclar,Перемешать
+powerup.ShuffleCats.description,Shuffle the cats around,Xáo trộn vị trí các bé mèo,Acak posisi kucing,สลับตำแหน่งแมว,고양이 위치를 섞어요,猫の位置をシャッフル,打乱猫咪的位置,Mélange les chats,Embaralha os gatinhos,Mezcla los gatitos,Перемешивает котиков
+,,,,,,,,,,,
+# CHALLENGES (key = challenge.<ChallengeType>.title / .description),,,,,,,,,,,
+challenge.FrozenBubble.title,Frozen Bubble,Bóng Đóng Băng,Gelembung Beku,ฟองน้ำแข็ง,얼음 방울,氷のバブル,冰冻泡泡,Bulle gelée,Bolha congelada,Burbuja congelada,Ледяной пузырь
+challenge.FrozenBubble.description,Pick cats next to it to break the ice,Chọn mèo ở bóng bên cạnh để phá băng,Pilih kucing di sebelahnya untuk memecahkan es,เลือกแมวข้างๆ เพื่อทุบน้ำแข็ง,옆의 고양이를 골라 얼음을 깨요,隣の猫を選んで氷を割ろう,选择旁边的猫咪来打破冰块,Choisis les chats voisins pour briser la glace,Escolha gatos ao lado para quebrar o gelo,Elige gatos de al lado para romper el hielo,"Выбирай котиков рядом, чтобы разбить лёд"
+challenge.LockedBubble.title,Locked Bubble,Bóng Bị Khóa,Gelembung Terkunci,ฟองที่ถูกล็อก,잠긴 방울,ロックバブル,上锁泡泡,Bulle verrouillée,Bolha trancada,Burbuja bloqueada,Запертый пузырь
+challenge.LockedBubble.description,Find the key to unlock the bubble,Tìm chìa khóa để mở bóng,Temukan kunci untuk membuka gelembung,หากุญแจเพื่อปลดล็อกฟอง,열쇠를 찾아 방울을 열어요,鍵を見つけてバブルを開けよう,找到钥匙解锁泡泡,Trouve la clé pour ouvrir la bulle,Encontre a chave para abrir a bolha,Encuentra la llave para abrir la burbuja,"Найди ключ, чтобы открыть пузырь"
+,,,,,,,,,,,
+# SETTINGS,,,,,,,,,,,
+settings.title,Settings,Cài đặt,Pengaturan,การตั้งค่า,설정,設定,设置,Paramètres,Configurações,Ajustes,Настройки
+settings.music,Music,Nhạc nền,Musik,เพลง,음악,音楽,音乐,Musique,Música,Música,Музыка
+settings.sound,Sound,Âm thanh,Suara,เสียง,효과음,効果音,音效,Son,Som,Sonido,Звук
+settings.vibration,Vibration,Rung,Getar,การสั่น,진동,振動,震动,Vibration,Vibração,Vibración,Вибрация
+settings.language,Language,Ngôn ngữ,Bahasa,ภาษา,언어,言語,语言,Langue,Idioma,Idioma,Язык
+settings.rateUs,Rate us,Đánh giá chúng tôi,Beri kami nilai,ให้คะแนนเรา,평가해 주세요,評価してください,请给我们评分,Évaluez-nous,Avalie-nos,Califícanos,Оцените нас

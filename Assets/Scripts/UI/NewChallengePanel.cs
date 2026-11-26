@@ -47,14 +47,14 @@ public class NewChallengePanel : PanelBaseUIController
         currentChallenge = challenge;
 
         if (challengeNameText != null)
-            challengeNameText.text = challenge.title;
+            challengeNameText.text = MultiLanguageManager.Translate($"challenge.{challenge.type}.title", challenge.title);
 
         // Không có icon thì giữ ảnh mặc định đang đặt sẵn trong panel
         if (challengeImage != null && challenge.icon != null)
             challengeImage.sprite = challenge.icon;
 
         if (challengeDescriptionText != null)
-            challengeDescriptionText.text = challenge.description;
+            challengeDescriptionText.text = MultiLanguageManager.Translate($"challenge.{challenge.type}.description", challenge.description);
 
         ShowDelay();
     }
