@@ -36,6 +36,10 @@ public class GameManager : MonoBehaviour
     [Tooltip("Bóng đóng băng: khoảng hở tối đa giữa 2 viền bóng để tính là \"bên cạnh\" (bấm mèo ở bóng bên cạnh thì phá băng)")]
     [SerializeField] float frozenNeighborDistance = 60f;
 
+    [Header("VFX")]
+    [Tooltip("SparkleTrail - vệt sáng đi theo mèo khi bay (Simulation Space của các ParticleSystem nên để World)")]
+    [SerializeField] ParticleSystem catTrailVfxPrefab;
+
     [Header("UI")]
     [Tooltip("Text hiện level đang chơi ở trên cùng màn hình (VD: Level 5)")]
     [SerializeField] Text levelText;
@@ -63,6 +67,7 @@ public class GameManager : MonoBehaviour
     readonly List<CatBubble> spawnedBubbles = new List<CatBubble>();
     readonly List<Vector2> placedPositions = new List<Vector2>();
     readonly List<float> placedRadiuses = new List<float>();
+    readonly List<ParticleSystem> catTrailPool = new List<ParticleSystem>();
 
     int levelBubbleCount;       // số bóng của level hiện tại (bóng thừa của level trước nằm sau trong pool)
     int placedBubbleCount;      // số bóng (theo thứ tự sinh) đã được chọn vị trí, chờ hoặc đã hiện
@@ -270,9 +275,14 @@ public class GameManager : MonoBehaviour
 
         SendCatToTarget(cat);
 
-        // Mèo đã rời bóng (không bị kẹt vì khay đầy) thì trừ băng các bóng bên cạnh
-        if (cat.IsFlying && sourceBubble != null)
-            UnfreezeNeighborBubbles(sourceBubble);
+        if (cat.IsFlying)
+        {
+            SoundManager.PlayCatMeow();
+
+            // Mèo đã rời bóng (không bị kẹt vì khay đầy) thì trừ băng các bóng bên cạnh
+            if (sourceBubble != null)
+                UnfreezeNeighborBubbles(sourceBubble);
+        }
 
         // Bấm mèo có thể làm bóng vỡ -> bóng sau lọt vào nhóm bóng đầu, mèo của nó xoay thẳng
         RefreshUprightCats(true);
@@ -466,6 +476,87 @@ public class GameManager : MonoBehaviour
             StopCoroutine(fullTrayCoroutine);
             fullTrayCoroutine = null;
         }
+    }
+
+    #endregion
+
+
+    #region TRAIL VFX METHODS
+
+    /// <summary>
+    /// Gắn vệt sáng vào mèo (hoặc ảnh mèo) đang bay, trail đi theo target. Trả về null nếu chưa gán prefab.
+    /// </summary>
+    public ParticleSystem AttachCatTrail(Transform target)
+    {
+        if (catTrailVfxPrefab == null || target == null)
+            return null;
+
+        ParticleSystem trail = GetTrailFromPool();
+
+        trail.transform.SetParent(target, false);
+        trail.transform.localPosition = Vector3.zero;
+        trail.transform.localRotation = Quaternion.identity;
+
+        // Lần tách trước SetParent giữ scale world nên localScale bị đổi theo scale mèo lúc bay (0.6...)
+        // -> mỗi lần dùng lại nhỏ dần. Đặt lại scale gốc của prefab, bù scale của target
+        // để trail luôn to bằng nhau dù gắn vào mèo trong bóng hay ảnh mèo của khay.
+        float targetScale = target.lossyScale.x;
+        float containerScale = catFlyContainer.lossyScale.x;
+        float compensate = targetScale != 0f ? containerScale / targetScale : 1f;
+        trail.transform.localScale = catTrailVfxPrefab.transform.localScale * compensate;
+
+        trail.gameObject.SetActive(true);
+        trail.Clear(true);
+        trail.Play(true);
+
+        return trail;
+    }
+
+    /// <summary>
+    /// Tách trail khỏi mèo khi tới nơi. immediate = false: ngừng phát, để hạt cũ mờ dần rồi mới tắt.
+    /// Gọi TRƯỚC khi tắt mèo (không SetParent được trong lúc object đang bị tắt).
+    /// </summary>
+    public void DetachCatTrail(ParticleSystem trail, bool immediate)
+    {
+        if (trail == null)
+            return;
+
+        trail.transform.SetParent(catFlyContainer, true);
+
+        if (immediate || !trail.gameObject.activeInHierarchy)
+        {
+            trail.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            trail.gameObject.SetActive(false);
+            return;
+        }
+
+        trail.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        StartCoroutine(ReturnTrailWhenDone(trail));
+    }
+
+    IEnumerator ReturnTrailWhenDone(ParticleSystem trail)
+    {
+        while (trail != null && trail.gameObject.activeSelf && trail.IsAlive(true))
+            yield return null;
+
+        if (trail != null)
+            trail.gameObject.SetActive(false);
+    }
+
+    ParticleSystem GetTrailFromPool()
+    {
+        foreach (ParticleSystem pooledTrail in catTrailPool)
+        {
+            if (pooledTrail != null && !pooledTrail.gameObject.activeSelf)
+                return pooledTrail;
+        }
+
+        ParticleSystem trail = Instantiate(catTrailVfxPrefab, catFlyContainer);
+        trail.name = "Cat Trail VFX";
+        trail.gameObject.SetActive(false);
+
+        catTrailPool.Add(trail);
+        return trail;
     }
 
     #endregion

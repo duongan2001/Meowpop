@@ -1,23 +1,72 @@
 ﻿using System;
 using UnityEngine;
 
+/// <summary>
+/// Nhóm âm thanh hiệu ứng (SFX), mỗi nhóm là 1 mảng riêng trong SoundManager.
+/// </summary>
+public enum SoundGroup
+{
+    UI,         // bấm nút, mở / đóng panel...
+    Cat,        // mèo kêu
+    Bubble,     // bóng vỡ, băng vỡ...
+    PowerUp,    // dùng / nhận power-up
+    Gameplay,   // thắng, thua, ổ hoàn thành, khay đầy...
+}
+
+/// <summary>
+/// Tên các âm thanh code đang gọi. Điền ĐÚNG tên này vào trường name của Sound trong Inspector.
+/// </summary>
+public static class SoundNames
+{
+    // UI
+    public const string TAP = "Tap";
+    public const string CLAIM_COIN = "ClaimCoin";
+
+    // Power-up
+    public const string USE_POWER_UP = "UsePowerUp";
+    public const string NEW_POWER_UP = "NewPowerUp";
+
+    // Gameplay
+    public const string WIN = "Win";
+    public const string LOSE = "Lose";
+    public const string NEW_CHALLENGE = "NewChallenge";
+    public const string SPAWN_NEW_CATBED = "SpawnNewCatbed";
+}
+
+/// <summary>
+/// Quản lý âm thanh: 1 nhạc nền (BGM) + các nhóm SFX riêng (UI, mèo, bóng, power-up, gameplay).
+/// Phát theo tên: SoundManager.Instance.PlayUISound("Click"), PlayGameplaySound("Win")...
+/// Nút trong Editor gán OnClick → PlayUISound và điền tên âm thanh.
+/// </summary>
 public class SoundManager : MonoBehaviour
 {
     #region VARIABLES
 
-    const int NO_SOUND = -1;
-    const int DEFAULT_BGM_INDEX = 0;
-    const int MEOW_SOUND_COUNT = 4;     // số tiếng mèo kêu ở cuối danh sách sounds
+    [Header("--- BGM ---")]
+    [Tooltip("Nhạc nền (nên bật Loop)")]
+    [SerializeField] Sound bgm;
+    [Tooltip("Tự phát nhạc nền khi vào game")]
+    [SerializeField] bool playBGMOnStart = true;
 
-    [Tooltip("Danh sách âm thanh. Phần tử 0 mặc định là nhạc nền (BGM), các phần tử còn lại là SFX")]
-    public Sound[] sounds;
+    [Header("--- SOUND EFFECTS ---")]
+    [Tooltip("Âm thanh UI: bấm nút, mở / đóng panel, nhận xu...")]
+    [SerializeField] Sound[] uiSounds;
+    [Tooltip("Tiếng mèo kêu (PlayRandomCatMeowSoundEffect lấy ngẫu nhiên trong mảng này)")]
+    [SerializeField] Sound[] catSounds;
+    [Tooltip("Âm thanh bóng: bóng vỡ, băng vỡ...")]
+    [SerializeField] Sound[] bubbleSounds;
+    [Tooltip("Âm thanh power-up: dùng / nhận power-up...")]
+    [SerializeField] Sound[] powerUpSounds;
+    [Tooltip("Âm thanh gameplay: thắng, thua, ổ hoàn thành, khay đầy...")]
+    [SerializeField] Sound[] gameplaySounds;
 
-    [Tooltip("Tự phát nhạc nền ở phần tử này khi vào game, -1 = không tự phát")]
-    [SerializeField] int playBGMOnStart = DEFAULT_BGM_INDEX;
+    [Header("--- BUTTON TAP ---")]
+    [Tooltip("Tự thêm tiếng Tap cho mọi Button trong scene (trừ mèo), không cần gán OnClick từng nút")]
+    [SerializeField] bool autoTapSoundOnButtons = true;
 
     bool isMusicOn = true;
     bool isSoundEffectOn = true;
-    int currentBGMIndex = DEFAULT_BGM_INDEX;    // phần tử đang dùng làm nhạc nền
+    int lastCatSoundIndex = -1;     // tránh phát lại đúng tiếng mèo vừa phát
 
     #endregion
 
@@ -57,8 +106,11 @@ public class SoundManager : MonoBehaviour
         SetOnOffSoundState();
         SetOnOffMusicState();
 
-        if (playBGMOnStart != NO_SOUND)
-            PlayBGM(playBGMOnStart);
+        if (playBGMOnStart)
+            PlayBGM();
+
+        if (autoTapSoundOnButtons)
+            AddTapSoundToButtons();
     }
 
     #endregion
@@ -68,81 +120,143 @@ public class SoundManager : MonoBehaviour
 
     void CreateAudioSources()
     {
-        foreach (Sound sound in sounds)
-        {
-            sound.source = gameObject.AddComponent<AudioSource>();
+        CreateAudioSource(bgm);
 
-            sound.source.playOnAwake = false;
-            sound.source.clip = sound.clip;
-            sound.source.volume = sound.volume;
-            sound.source.pitch = sound.pitch;
-            sound.source.loop = sound.loop;
+        foreach (SoundGroup group in Enum.GetValues(typeof(SoundGroup)))
+        {
+            Sound[] sounds = GetSounds(group);
+            if (sounds == null)
+                continue;
+
+            foreach (Sound sound in sounds)
+                CreateAudioSource(sound);
         }
+    }
+
+    void CreateAudioSource(Sound sound)
+    {
+        if (sound == null || sound.clip == null)
+            return;
+
+        sound.source = gameObject.AddComponent<AudioSource>();
+
+        sound.source.playOnAwake = false;
+        sound.source.clip = sound.clip;
+        sound.source.volume = sound.volume;
+        sound.source.pitch = sound.pitch;
+        sound.source.loop = sound.loop;
     }
 
     #endregion
 
 
-    #region PLAY METHODS
+    #region BGM METHODS
 
-    public void PlayBGM(int index)
+    public void PlayBGM()
     {
-        if (!IsValidIndex(index))
+        if (bgm == null || bgm.source == null)
             return;
 
-        // Đổi bài thì dừng bài cũ, đang phát đúng bài này thì không phát lại từ đầu
-        if (index != currentBGMIndex)
-        {
-            StopBGM();
-            currentBGMIndex = index;
-            ApplyVolumes();
-        }
-
-        AudioSource source = sounds[currentBGMIndex].source;
-        if (!source.isPlaying)
-            source.Play();
-    }
-
-    public void PlayBGM(string soundName)
-    {
-        PlayBGM(GetSoundIndex(soundName));
+        // Đang phát thì không phát lại từ đầu
+        if (!bgm.source.isPlaying)
+            bgm.source.Play();
     }
 
     public void StopBGM()
     {
-        if (IsValidIndex(currentBGMIndex))
-            sounds[currentBGMIndex].source.Stop();
+        if (bgm != null && bgm.source != null)
+            bgm.source.Stop();
     }
 
-    public void PlaySFX(int index)
+    #endregion
+
+
+    #region SFX METHODS
+
+    /// <summary>
+    /// Phát SFX từ script khác, không cần kiểm tra SoundManager có trong scene hay không.
+    /// </summary>
+    public static void Play(SoundGroup group, string soundName)
     {
-        if (!isSoundEffectOn || !IsValidIndex(index))
+        if (Instance != null)
+            Instance.PlaySFX(group, soundName);
+    }
+
+    public static void PlayCatMeow()
+    {
+        if (Instance != null)
+            Instance.PlayRandomCatMeowSoundEffect();
+    }
+
+    // Phát theo tên trong từng nhóm (public để gán được vào OnClick trong Editor)
+
+    public void PlayUISound(string soundName) => PlaySFX(SoundGroup.UI, soundName);
+    public void PlayCatSound(string soundName) => PlaySFX(SoundGroup.Cat, soundName);
+    public void PlayBubbleSound(string soundName) => PlaySFX(SoundGroup.Bubble, soundName);
+    public void PlayPowerUpSound(string soundName) => PlaySFX(SoundGroup.PowerUp, soundName);
+    public void PlayGameplaySound(string soundName) => PlaySFX(SoundGroup.Gameplay, soundName);
+
+    public void PlaySFX(SoundGroup group, string soundName)
+    {
+        PlaySFX(group, GetSoundIndex(group, soundName));
+    }
+
+    public void PlaySFX(SoundGroup group, int index)
+    {
+        if (!isSoundEffectOn)
             return;
 
-        AudioSource source = sounds[index].source;
-        source.PlayOneShot(source.clip);
-    }
+        Sound sound = GetSound(group, index);
+        if (sound == null || sound.source == null)
+            return;
 
-    public void PlaySFX(string soundName)
-    {
-        PlaySFX(GetSoundIndex(soundName));
+        // Âm thanh lặp (VD tiếng nền của power-up) thì Play, còn lại PlayOneShot để chồng được nhiều lần
+        if (sound.loop)
+        {
+            if (!sound.source.isPlaying)
+                sound.source.Play();
+        }
+        else
+            sound.source.PlayOneShot(sound.source.clip);
     }
 
     /// <summary>
-    /// Phát ngẫu nhiên 1 trong các tiếng mèo kêu (MEOW_SOUND_COUNT phần tử cuối danh sách sounds).
+    /// Phát ngẫu nhiên 1 âm thanh trong nhóm.
     /// </summary>
-    public void PlayRandomCatMeowSoundEffect()
+    public void PlayRandomSFX(SoundGroup group)
     {
+        Sound[] sounds = GetSounds(group);
         if (sounds == null || sounds.Length == 0)
             return;
 
-        // Danh sách ít hơn 4 phần tử thì lấy hết các phần tử có (trừ nhạc nền)
-        int firstMeowIndex = Mathf.Max(0, sounds.Length - MEOW_SOUND_COUNT);
-        if (firstMeowIndex == currentBGMIndex && sounds.Length > 1)
-            firstMeowIndex++;
+        PlaySFX(group, UnityEngine.Random.Range(0, sounds.Length));
+    }
 
-        // Ghi rõ UnityEngine.Random vì file có using System (trùng tên System.Random)
-        PlaySFX(UnityEngine.Random.Range(firstMeowIndex, sounds.Length));
+    /// <summary>
+    /// Phát ngẫu nhiên 1 tiếng mèo kêu trong catSounds, không lặp lại tiếng vừa phát.
+    /// </summary>
+    public void PlayRandomCatMeowSoundEffect()
+    {
+        if (catSounds == null || catSounds.Length == 0)
+            return;
+
+        int index = UnityEngine.Random.Range(0, catSounds.Length);
+
+        if (catSounds.Length > 1 && index == lastCatSoundIndex)
+            index = (index + 1) % catSounds.Length;
+
+        lastCatSoundIndex = index;
+        PlaySFX(SoundGroup.Cat, index);
+    }
+
+    /// <summary>
+    /// Dừng 1 âm thanh đang lặp (loop).
+    /// </summary>
+    public void StopSFX(SoundGroup group, string soundName)
+    {
+        Sound sound = GetSound(group, GetSoundIndex(group, soundName));
+        if (sound != null && sound.source != null)
+            sound.source.Stop();
     }
 
     #endregion
@@ -151,7 +265,7 @@ public class SoundManager : MonoBehaviour
     #region SETTING METHODS
 
     /// <summary>
-    /// Đọc trạng thái SFX đã lưu và áp dụng (tắt = volume 0 cho mọi âm thanh trừ nhạc nền).
+    /// Đọc trạng thái SFX đã lưu và áp dụng.
     /// </summary>
     public void SetOnOffSoundState()
     {
@@ -169,7 +283,7 @@ public class SoundManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Bật / tắt SFX, lưu lại (dùng cho nút trong màn Setting).
+    /// Bật / tắt SFX, lưu lại (Panel - Settings gọi).
     /// </summary>
     public void SetSoundEffectOn(bool isOn)
     {
@@ -178,7 +292,7 @@ public class SoundManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Bật / tắt nhạc nền, lưu lại (dùng cho nút trong màn Setting).
+    /// Bật / tắt nhạc nền, lưu lại (Panel - Settings gọi).
     /// </summary>
     public void SetMusicOn(bool isOn)
     {
@@ -187,18 +301,27 @@ public class SoundManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Nhạc nền theo trạng thái music, các âm thanh còn lại theo trạng thái SFX.
+    /// Nhạc nền theo trạng thái music, các nhóm SFX theo trạng thái sound (tắt = volume 0).
     /// </summary>
     void ApplyVolumes()
     {
-        for (int i = 0; i < sounds.Length; i++)
+        ApplyVolume(bgm, isMusicOn);
+
+        foreach (SoundGroup group in Enum.GetValues(typeof(SoundGroup)))
         {
-            if (sounds[i].source == null)
+            Sound[] sounds = GetSounds(group);
+            if (sounds == null)
                 continue;
 
-            bool isOn = i == currentBGMIndex ? isMusicOn : isSoundEffectOn;
-            sounds[i].source.volume = isOn ? sounds[i].volume : 0f;
+            foreach (Sound sound in sounds)
+                ApplyVolume(sound, isSoundEffectOn);
         }
+    }
+
+    void ApplyVolume(Sound sound, bool isOn)
+    {
+        if (sound != null && sound.source != null)
+            sound.source.volume = isOn ? sound.volume : 0f;
     }
 
     #endregion
@@ -206,25 +329,64 @@ public class SoundManager : MonoBehaviour
 
     #region HELPER METHODS
 
-    bool IsValidIndex(int index)
+    /// <summary>
+    /// Thêm tiếng Tap vào OnClick của mọi Button có sẵn trong scene (kể cả panel đang tắt).
+    /// Bỏ qua mèo (mèo có tiếng kêu riêng). Nút sinh ra sau lúc Start thì gán tay: OnClick → PlayUISound("Tap").
+    /// </summary>
+    void AddTapSoundToButtons()
     {
-        if (sounds != null && index >= 0 && index < sounds.Length)
-            return true;
+        UnityEngine.UI.Button[] buttons = FindObjectsOfType<UnityEngine.UI.Button>(true);
 
-        Debug.LogWarning($"[SoundManager] Không có âm thanh ở vị trí {index}");
-        return false;
+        foreach (UnityEngine.UI.Button button in buttons)
+        {
+            if (button.GetComponent<Cat>() != null)
+                continue;
+
+            button.onClick.AddListener(() => PlayUISound(SoundNames.TAP));
+        }
     }
 
-    int GetSoundIndex(string soundName)
+    Sound[] GetSounds(SoundGroup group)
     {
-        for (int i = 0; i < sounds.Length; i++)
+        switch (group)
         {
-            if (sounds[i].name == soundName)
-                return i;
+            case SoundGroup.UI: return uiSounds;
+            case SoundGroup.Cat: return catSounds;
+            case SoundGroup.Bubble: return bubbleSounds;
+            case SoundGroup.PowerUp: return powerUpSounds;
+            case SoundGroup.Gameplay: return gameplaySounds;
+            default: return null;
+        }
+    }
+
+    Sound GetSound(SoundGroup group, int index)
+    {
+        Sound[] sounds = GetSounds(group);
+
+        if (sounds != null && index >= 0 && index < sounds.Length)
+            return sounds[index];
+
+        if (index >= 0)
+            Debug.LogWarning($"[SoundManager] Nhóm {group} không có âm thanh ở vị trí {index}");
+
+        return null;
+    }
+
+    int GetSoundIndex(SoundGroup group, string soundName)
+    {
+        Sound[] sounds = GetSounds(group);
+
+        if (sounds != null)
+        {
+            for (int i = 0; i < sounds.Length; i++)
+            {
+                if (sounds[i] != null && sounds[i].name == soundName)
+                    return i;
+            }
         }
 
-        Debug.LogWarning($"[SoundManager] Không tìm thấy âm thanh tên \"{soundName}\"");
-        return NO_SOUND;
+        Debug.LogWarning($"[SoundManager] Nhóm {group} không có âm thanh tên \"{soundName}\"");
+        return -1;
     }
 
     #endregion

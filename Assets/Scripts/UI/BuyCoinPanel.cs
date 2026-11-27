@@ -319,6 +319,9 @@ public class BuyCoinPanel : PanelBaseUIController
 
     void OnCoinArrived(int fromCoin, int toCoin, int arrivedIndex, int coinCount)
     {
+        // Mỗi đồng xu bay tới nơi thì kêu 1 tiếng
+        SoundManager.Play(SoundGroup.UI, SoundNames.CLAIM_COIN);
+
         displayedCoin = fromCoin + Mathf.RoundToInt((toCoin - fromCoin) * (float)arrivedIndex / coinCount);
         UpdateCoinText(displayedCoin);
 

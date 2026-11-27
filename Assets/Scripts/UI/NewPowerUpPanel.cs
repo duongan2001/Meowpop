@@ -107,6 +107,7 @@ public class NewPowerUpPanel : PanelBaseUIController
     public override void Show()
     {
         base.Show();
+        SoundManager.Play(SoundGroup.PowerUp, SoundNames.NEW_POWER_UP);
         PlayShowSequence();
         PlayVfx();
     }

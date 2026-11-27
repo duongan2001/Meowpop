@@ -22,6 +22,9 @@ public class PowerUpManager : MonoBehaviour
     [Tooltip("Panel - Buy Power-up, mở khi bấm nút đã hết lượt")]
     [SerializeField] BuyPowerUpPanel buyPowerUpPanel;
 
+    [Tooltip("Panel - Use Power-up: hiệu ứng icon bay lên giữa màn hình trước khi dùng. Để trống thì dùng luôn")]
+    [SerializeField] UsePowerUpPanel usePowerUpPanel;
+
     [Tooltip("Panel - New Power-up, giới thiệu power-up vừa mở khóa. Để trống thì tặng lượt free luôn")]
     [SerializeField] NewPowerUpPanel newPowerUpPanel;
 
@@ -40,6 +43,7 @@ public class PowerUpManager : MonoBehaviour
     [SerializeField] float shuffleRandomDelay = 0.15f;
 
     bool isBusy;                // đang trộn mèo -> chặn bấm mèo / power-up
+    bool isPlayingUsePanel;     // đang chạy Panel - Use Power-up -> chặn bấm mèo / power-up
     int shufflingCatCount;
     PowerUpType pendingBuyType;
 
@@ -57,7 +61,7 @@ public class PowerUpManager : MonoBehaviour
 
     public static PowerUpManager Instance { get; private set; }
 
-    public bool IsBusy => isBusy;
+    public bool IsBusy => isBusy || isPlayingUsePanel;
 
     // Power-up người chơi đang muốn mua (panel mua đọc giá trị này)
     public PowerUpType PendingBuyType => pendingBuyType;
@@ -90,6 +94,7 @@ public class PowerUpManager : MonoBehaviour
     public void OnLevelLoaded(int level)
     {
         StopShuffle();
+        CancelUsePanel();
         RefreshAllButtons();
 
         if (powerUps == null)
@@ -275,7 +280,7 @@ public class PowerUpManager : MonoBehaviour
     /// </summary>
     public void OnPowerUpButtonClicked(PowerUpType type)
     {
-        if (isBusy || !IsUnlocked(type))
+        if (IsBusy || !IsUnlocked(type))
             return;
 
         if (GetCount(type) <= 0)
@@ -287,12 +292,82 @@ public class PowerUpManager : MonoBehaviour
         if (GameManager.Instance.IsGameOver)
             return;
 
-        // Chỉ trừ lượt khi power-up thật sự làm được gì đó
-        if (UsePowerUp(type))
+        // Không có panel hiệu ứng thì dùng luôn
+        if (usePowerUpPanel == null)
         {
-            SaveCount(type, GetCount(type) - 1);
-            RefreshButton(type);
+            UseAndConsume(type);
+            return;
         }
+
+        // Không có gì để xử lý (khay trống, không còn ổ cần lấp...) thì không chạy hiệu ứng, không trừ lượt
+        if (!CanUsePowerUp(type))
+            return;
+
+        PowerUpButton button = GetButton(type);
+        PowerUpData data = GetPowerUpData(type);
+
+        isPlayingUsePanel = true;
+        SoundManager.Play(SoundGroup.PowerUp, SoundNames.USE_POWER_UP);
+
+        usePowerUpPanel.PlayUsePowerUp(
+            data != null ? data.icon : null,
+            button != null ? (RectTransform)button.transform : null,
+            isCompleted =>
+            {
+                isPlayingUsePanel = false;
+
+                if (isCompleted && !GameManager.Instance.IsGameOver)
+                    UseAndConsume(type);
+            });
+    }
+
+    /// <summary>
+    /// Dùng power-up, chỉ trừ lượt khi power-up thật sự làm được gì đó.
+    /// </summary>
+    void UseAndConsume(PowerUpType type)
+    {
+        if (!UsePowerUp(type))
+            return;
+
+        // Có panel thì tiếng đã phát lúc bắt đầu hiệu ứng
+        if (usePowerUpPanel == null)
+            SoundManager.Play(SoundGroup.PowerUp, SoundNames.USE_POWER_UP);
+
+        SaveCount(type, GetCount(type) - 1);
+        RefreshButton(type);
+    }
+
+    /// <summary>
+    /// Kiểm tra nhanh power-up có dùng được không (trước khi chạy hiệu ứng).
+    /// </summary>
+    bool CanUsePowerUp(PowerUpType type)
+    {
+        switch (type)
+        {
+            case PowerUpType.FillBed:
+                foreach (CatBed bed in GameManager.Instance.catBeds)
+                {
+                    if (bed != null && bed.IsUnlocked && bed.CatID != CatBed.NO_CAT && !bed.IsFull)
+                        return true;
+                }
+                return false;
+
+            case PowerUpType.ClearTray:
+                return GameManager.Instance.catTray != null && GameManager.Instance.catTray.CatCountInTray > 0;
+
+            case PowerUpType.ShuffleCats:
+                return GameManager.Instance.GetCatsInBubbles(shuffleBubbleCount).Count >= 2;
+        }
+
+        return false;
+    }
+
+    void CancelUsePanel()
+    {
+        if (usePowerUpPanel != null)
+            usePowerUpPanel.Cancel();
+
+        isPlayingUsePanel = false;
     }
 
     void OpenBuyPanel(PowerUpType type)
@@ -622,6 +697,15 @@ public class PowerUpManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Vị trí nút power-up (Panel - Use Power-up dùng làm điểm bay ra).
+    /// </summary>
+    public RectTransform GetButtonRect(PowerUpType type)
+    {
+        PowerUpButton button = GetButton(type);
+        return button != null ? (RectTransform)button.transform : null;
     }
 
     PowerUpButton GetButton(PowerUpType type)

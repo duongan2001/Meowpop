@@ -56,6 +56,8 @@ public class CatTray : MonoBehaviour
 
     // Pool ảnh mèo dùng để bay từ khay lên ổ
     readonly List<Image> flyingImagePool = new List<Image>();
+    // Trail đang gắn trên từng ảnh mèo bay
+    readonly Dictionary<Image, ParticleSystem> flyingTrails = new Dictionary<Image, ParticleSystem>();
 
     #endregion
 
@@ -390,8 +392,13 @@ public class CatTray : MonoBehaviour
         flySeq.Append(flyRect.DOMove(targetPos, flyToBedDuration).SetEase(flyToBedEase));
         flySeq.Join(flyRect.DOSizeDelta(targetSize, flyToBedDuration).SetEase(flyToBedEase));
         flySeq.SetTarget(flyRect);
+
+        // Bắt đầu bay (sau delay) thì gắn vệt sáng
+        flySeq.OnStart(() => flyingTrails[flyImage] = GameManager.Instance.AttachCatTrail(flyRect));
+
         flySeq.OnComplete(() =>
         {
+            DetachTrail(flyImage, false);
             flyImage.gameObject.SetActive(false);
             onArrived?.Invoke();
         });
@@ -427,8 +434,18 @@ public class CatTray : MonoBehaviour
         foreach (Image image in flyingImagePool)
         {
             image.rectTransform.DOKill();
+            DetachTrail(image, true);
             image.gameObject.SetActive(false);
         }
+    }
+
+    void DetachTrail(Image flyImage, bool immediate)
+    {
+        if (!flyingTrails.TryGetValue(flyImage, out ParticleSystem trail))
+            return;
+
+        flyingTrails.Remove(flyImage);
+        GameManager.Instance.DetachCatTrail(trail, immediate);
     }
 
     Vector3 GetWorldCenter(RectTransform rect)

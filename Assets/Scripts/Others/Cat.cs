@@ -24,6 +24,7 @@ public class Cat : MonoBehaviour
     Quaternion originalLocalRotation;
     bool isUpright;     // đang được xoay thẳng đứng (thuộc nhóm bóng đầu)
     CatBubble catBubble;
+    ParticleSystem flyTrail;    // vệt sáng đi theo mèo lúc bay (lấy từ pool của GameManager)
 
     // Bắn ra khi người chơi bấm vào mèo, logic game lắng nghe để quyết định mèo bay đi đâu
     public event Action<Cat> OnClicked;
@@ -183,6 +184,7 @@ public class Cat : MonoBehaviour
 
         // DOKill không gọi OnComplete nên sẽ không trừ mèo của bóng / không báo tới ổ
         transform.DOKill();
+        DetachTrail(true);
         ReturnToOriginalParent();
 
         isFlying = false;
@@ -211,6 +213,15 @@ public class Cat : MonoBehaviour
 
         if (!animate || !gameObject.activeInHierarchy)
             transform.rotation = Quaternion.identity;
+    }
+
+    void DetachTrail(bool immediate)
+    {
+        if (flyTrail == null)
+            return;
+
+        GameManager.Instance.DetachCatTrail(flyTrail, immediate);
+        flyTrail = null;
     }
 
     void ReturnToOriginalParent()
@@ -253,6 +264,7 @@ public class Cat : MonoBehaviour
         PlayAnimation(IDLE_STATE);
 
         transform.SetParent(GameManager.Instance.catFlyContainer);
+        flyTrail = GameManager.Instance.AttachCatTrail(transform);
 
         // Trừ mèo ngay khi bấm (mèo đã rời khỏi bóng nên bóng vỡ / tắt cũng không ảnh hưởng mèo đang bay)
         if (catBubble != null)
@@ -270,6 +282,9 @@ public class Cat : MonoBehaviour
         flySeq.OnComplete(() =>
         {
             onArrived?.Invoke();
+
+            // Tách trail ra cho hạt mờ dần (phải làm trước khi tắt mèo)
+            DetachTrail(false);
 
             // Trả mèo về parent + vị trí cũ trước khi tắt (không được SetParent trong OnDisable)
             ReturnToOriginalParent();

@@ -69,6 +69,7 @@ public class LosePanel : PanelBaseUIController
     public override void Show()
     {
         base.Show();
+        SoundManager.Play(SoundGroup.Gameplay, SoundNames.LOSE);
         PlayShowSequence();
     }
 

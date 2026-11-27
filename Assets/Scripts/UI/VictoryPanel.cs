@@ -114,6 +114,7 @@ public class VictoryPanel : PanelBaseUIController
     public override void Show()
     {
         base.Show();
+        SoundManager.Play(SoundGroup.Gameplay, SoundNames.WIN);
         PlayShowSequence();
     }
 
@@ -456,6 +457,9 @@ public class VictoryPanel : PanelBaseUIController
 
     void OnCoinArrived(int fromCoin, int toCoin, int arrivedIndex, int coinCount)
     {
+        // Mỗi đồng xu bay tới nơi thì kêu 1 tiếng
+        SoundManager.Play(SoundGroup.UI, SoundNames.CLAIM_COIN);
+
         displayedCoin = fromCoin + Mathf.RoundToInt((toCoin - fromCoin) * (float)arrivedIndex / coinCount);
         UpdateCoinText(displayedCoin);
 

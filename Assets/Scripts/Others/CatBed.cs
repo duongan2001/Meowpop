@@ -429,6 +429,7 @@ public class CatBed : MonoBehaviour
 
         // Zoom ổ (đã nhận loại mới) về kích thước ban đầu
         zoomTarget.localScale = Vector3.zero;
+        SoundManager.Play(SoundGroup.Gameplay, SoundNames.SPAWN_NEW_CATBED);
         zoomTarget.DOScale(zoomTargetScale, zoomInDuration).SetEase(Ease.OutBack);
     }
 
@@ -449,6 +450,7 @@ public class CatBed : MonoBehaviour
 
         // Zoom ổ (đã mở) về kích thước ban đầu
         zoomTarget.localScale = Vector3.zero;
+        SoundManager.Play(SoundGroup.Gameplay, SoundNames.SPAWN_NEW_CATBED);
         zoomTarget.DOScale(zoomTargetScale, zoomInDuration).SetEase(Ease.OutBack);
     }
 

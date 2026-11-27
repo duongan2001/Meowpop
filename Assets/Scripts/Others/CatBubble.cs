@@ -279,6 +279,7 @@ public class CatBubble : MonoBehaviour
         isFrozen = false;
         frozenHitLeft = 0;
         PlayVfx(iceBreakVfxPrefab, ref iceBreakVfx, "Ice Break VFX");
+        SoundManager.Play(SoundGroup.Bubble, "IceBreak");
 
         if (frozenBubbleImage == null)
             return;
@@ -364,6 +365,7 @@ public class CatBubble : MonoBehaviour
     void PopBubble()
     {
         PlayVfx(popVfxPrefab, ref popVfx, "Pop VFX");
+        SoundManager.Play(SoundGroup.Bubble, "BubblePop");
 
         transform.DOKill();
         transform.DOScale(Vector3.zero, popDuration)

@@ -65,6 +65,7 @@ public class NewChallengePanel : PanelBaseUIController
     public override void Show()
     {
         base.Show();
+        SoundManager.Play(SoundGroup.Gameplay, SoundNames.NEW_CHALLENGE);
         PlayVfx();
     }
 
